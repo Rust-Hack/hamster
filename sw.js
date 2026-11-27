@@ -1,6 +1,6 @@
 /* Хамстер: работа без интернета. Страница — сначала из сети (чтобы обновления доходили сразу), без сети — из кеша.
    Картинки — из кеша. Запросы к базе (другой адрес) сюда не попадают. При изменении файлов поднять номер версии. */
-const CACHE = 'hamster-v2';
+const CACHE = 'hamster-v3';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {

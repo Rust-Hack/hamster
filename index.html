@@ -94,8 +94,8 @@
   .coll-head b{color:var(--ink);font-size:15px}
   .coll-head .sp{flex:1}
   .link-btn{border:0;background:none;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;padding:4px;touch-action:manipulation}
-  .chips{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
-  .chip{aspect-ratio:1;width:100%;max-width:46px;justify-self:center;border-radius:50%;border:1px solid var(--line);background:var(--chip);font-size:20px;line-height:1;
+  .chips{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px}
+  .chip{aspect-ratio:1;width:100%;max-width:46px;justify-self:center;border-radius:50%;border:1px solid var(--line);background:var(--chip);font-size:18px;line-height:1;
     display:grid;place-items:center;cursor:pointer;padding:0;touch-action:manipulation;-webkit-tap-highlight-color:transparent;color:var(--muted);font-family:inherit;font-weight:800}
   .chip.locked{background:var(--chip-locked);font-size:16px}
   .chip.now{box-shadow:0 0 0 3px var(--accent)}
@@ -141,6 +141,14 @@
   .stage-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #2B1D14}
   #wardBtn{bottom:12px} #gameBtn{bottom:72px}
   .stage.gaming .stage-btn,.stage.gaming #seedBtn,.stage.gaming #hint{display:none}
+  #giftBtn{left:auto;right:15px;bottom:78px;animation:wiggle 1.8s ease-in-out infinite}
+  @keyframes wiggle{0%,60%,100%{transform:rotate(0)}68%{transform:rotate(-14deg)}76%{transform:rotate(12deg)}84%{transform:rotate(-8deg)}92%{transform:rotate(4deg)}}
+  #giftPop{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;z-index:5}
+  #giftPop .gp-card{background:rgba(255,253,249,.97);color:#2B1D14;border:2px solid #2B1D14;border-radius:22px;padding:16px 22px;text-align:center;max-width:80%;
+    animation:pop .5s ease-out}
+  #giftPop .gp-e{font-size:64px;line-height:1.1}
+  #giftPop .gp-t{font-weight:800;font-size:17px;margin-top:6px}
+  @media (prefers-reduced-motion: reduce){ #giftBtn{animation:none} }
   #gameHud{position:absolute;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:18px;background:rgba(255,253,249,.95);color:#2B1D14;
     border:2px solid #2B1D14;border-radius:999px;padding:6px 18px;font-weight:800;font-size:18px;z-index:4;white-space:nowrap;pointer-events:none}
   #gameBig{position:absolute;inset:0;display:grid;place-items:center;font-size:76px;font-weight:900;color:#2B1D14;pointer-events:none;z-index:4;
@@ -205,6 +213,8 @@
     <button id="gameBtn" class="stage-btn" type="button" aria-label="Мини-игра «Лови семечки»">🎮</button>
     <div id="gameHud" hidden><span>🌻 <b id="gScore">0</b></span><span>⏱ <b id="gTime">20</b></span></div>
     <div id="gameBig" hidden></div>
+    <button id="giftBtn" class="stage-btn" type="button" aria-label="Подарок дня" hidden>🎁</button>
+    <div id="giftPop" hidden><div class="gp-card"><div class="gp-e"></div><div class="gp-t"></div></div></div>
     <button id="seedBtn" type="button" aria-label="Дать семечку">
       <svg viewBox="0 0 30 30" aria-hidden="true"><g transform="rotate(32 15 15)">
         <path d="M15 3 C22 8 22 22 15 27 C8 22 8 8 15 3 Z" fill="#2E2E33" stroke="#2B1D14" stroke-width="2"/>
@@ -402,6 +412,34 @@ svg.innerHTML = `
     <ellipse cx="200" cy="546" rx="190" ry="32" fill="#B5473A"/>
     <ellipse cx="200" cy="546" rx="160" ry="22" fill="none" stroke="#F2C14E" stroke-width="4"/>
   </g>
+  <g id="bgNY" style="display:none">
+    <rect x="-600" y="-800" width="1600" height="1240" fill="#F1DFC9"/>
+    <g transform="translate(14 24)"><rect width="100" height="150" rx="6" fill="#1D2A55" stroke="#7A5A3C" stroke-width="6"/>
+      <circle cx="20" cy="30" r="2.5" fill="#fff"/><circle cx="70" cy="20" r="2" fill="#fff"/><circle cx="40" cy="95" r="2.5" fill="#fff"/><circle cx="82" cy="110" r="2" fill="#fff"/><circle cx="60" cy="60" r="1.8" fill="#fff"/>
+      <path d="M0 132 q25 -16 50 0 q25 -14 50 0 v18 h-100 z" fill="#FFFFFF"/>
+      <path d="M50 0 V150 M0 75 H100" stroke="#7A5A3C" stroke-width="5"/>
+      <rect x="-8" y="148" width="116" height="10" rx="3" fill="#FFFFFF" stroke="#7A5A3C" stroke-width="3"/></g>
+    <path d="M-60 0 Q40 34 140 6 Q240 36 330 4 Q400 30 480 2" stroke="#2E6B3A" stroke-width="3" fill="none"/>
+    <g stroke="#2B1D14" stroke-width="1.5"><circle cx="10" cy="15" r="5" fill="#F0405B"/><circle cx="60" cy="22" r="5" fill="#FFD34D"/><circle cx="110" cy="15" r="5" fill="#5BC0EB"/>
+      <circle cx="170" cy="16" r="5" fill="#2E9E5E"/><circle cx="220" cy="24" r="5" fill="#F0405B"/><circle cx="270" cy="16" r="5" fill="#FFD34D"/><circle cx="330" cy="6" r="5" fill="#5BC0EB"/><circle cx="380" cy="18" r="5" fill="#2E9E5E"/></g>
+    <rect x="-600" y="440" width="1600" height="520" fill="#C9996A"/>
+    <path d="M-600 440 H1000" stroke="#A97C52" stroke-width="4"/>
+    <path d="M-600 472 H1000 M-600 506 H1000 M-600 546 H1000 M-600 594 H1000 M40 440 V472 M250 472 V506 M120 506 V546 M330 546 V594 M60 546 V594" stroke="#B4845A" stroke-width="2.5"/>
+    <g transform="translate(356 196)">
+      <rect x="-12" y="232" width="24" height="26" fill="#7A4A22" stroke="#2B1D14" stroke-width="3"/>
+      <path d="M0 -40 L46 40 H22 L62 120 H32 L76 236 H-76 L-32 120 H-62 L-22 40 H-46 Z" fill="#2E7D4F" stroke="#1E4D30" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M-30 70 Q0 86 30 66 M-46 160 Q0 182 50 154" stroke="#F7C948" stroke-width="3" fill="none"/>
+      <g stroke="#2B1D14" stroke-width="1.6"><circle cx="-16" cy="52" r="7" fill="#F0405B"/><circle cx="18" cy="96" r="7" fill="#FFD34D"/><circle cx="-30" cy="132" r="7" fill="#5BC0EB"/>
+        <circle cx="34" cy="176" r="8" fill="#F0405B"/><circle cx="-44" cy="204" r="8" fill="#FFD34D"/><circle cx="4" cy="212" r="7" fill="#B07CF0"/><circle cx="-4" cy="150" r="6" fill="#FFFFFF"/></g>
+      <path d="${STAR5}" transform="translate(0 -44) scale(1.8)" fill="${C.gold}" stroke="#2B1D14" stroke-width="1.6"/>
+    </g>
+    <g stroke="#2B1D14" stroke-width="2.5" stroke-linejoin="round">
+      <rect x="276" y="462" width="40" height="34" rx="3" fill="#D62E3A"/><path d="M296 462 V496 M276 478 H316" stroke="#F7C948" stroke-width="5"/>
+      <rect x="18" y="470" width="34" height="28" rx="3" fill="#2C6FB7"/><path d="M35 470 V498 M18 484 H52" stroke="#FFFFFF" stroke-width="4"/>
+    </g>
+    <ellipse cx="200" cy="546" rx="190" ry="32" fill="#2E7D4F"/>
+    <ellipse cx="200" cy="546" rx="160" ry="22" fill="none" stroke="#F0405B" stroke-width="4"/>
+  </g>
   <g id="bgNight" style="display:none">
     <rect x="-600" y="-800" width="1600" height="1240" fill="url(#nightG)"/>
     <g id="nightStars" fill="#FFF6D8"></g>
@@ -445,6 +483,7 @@ svg.innerHTML = `
     <circle cx="146" cy="294" r="3.6" fill="${C.silver}" stroke="#55585E" stroke-width="1.2"/>
     <circle cx="254" cy="294" r="3.6" fill="${C.silver}" stroke="#55585E" stroke-width="1.2"/>
     <g id="wChain" style="display:none"></g>
+    <g id="wGarland" style="display:none"></g>
     <path d="M284 334 Q326 366 314 406 L290 430" stroke="${C.line}" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     <path d="M284 334 Q326 366 314 406 L290 430" stroke="#26262B" stroke-width="38" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     <path d="M298 350 Q316 364 320 384" stroke="${C.jacketHi}" stroke-width="6" stroke-linecap="round" fill="none" opacity=".45"/>
@@ -486,6 +525,7 @@ svg.innerHTML = `
     <path d="M102 254 C104 226 140 214 170 226 C184 218 216 218 230 226 C260 214 296 226 298 254 C296 282 258 294 200 294 C142 294 104 282 102 254 Z" fill="${C.cream}"/>
     <ellipse id="glow" cx="190" cy="244" rx="80" ry="42" fill="#A8D8FF" opacity="0"/>
     <ellipse id="tint" cx="200" cy="196" rx="112" ry="92" fill="#E2452F" opacity="0"/>
+    <ellipse id="frost" cx="200" cy="196" rx="112" ry="92" fill="#8FD3FF" opacity="0"/>
     <ellipse id="blushL" cx="132" cy="242" rx="20" ry="11" fill="${C.blush}" opacity=".2"/>
     <ellipse id="blushR" cx="268" cy="242" rx="20" ry="11" fill="${C.blush}" opacity=".2"/>
     <g id="whiskers" stroke="${C.line}" stroke-width="1.8" stroke-linecap="round" fill="none" opacity=".5">
@@ -561,6 +601,19 @@ svg.innerHTML = `
       <ellipse cx="80" cy="186" rx="9" ry="18" fill="${C.green}"/>
       <ellipse cx="320" cy="186" rx="9" ry="18" fill="${C.green}"/>
     </g>
+    <g id="wSanta" style="display:none">
+      <path d="M96 118 C104 52 170 10 246 16 C292 20 330 46 348 88 C330 76 306 74 294 86 C302 96 306 106 304 118 Z" fill="#D62E3A" stroke="${C.line}" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M150 40 Q200 22 250 26" stroke="#F06A74" stroke-width="5" fill="none" stroke-linecap="round" opacity=".7"/>
+      <path d="M86 108 Q200 88 314 108 L316 136 Q200 118 84 136 Z" fill="#F8F8F4" stroke="${C.line}" stroke-width="4" stroke-linejoin="round"/>
+      <circle cx="352" cy="94" r="17" fill="#F8F8F4" stroke="${C.line}" stroke-width="3.5"/>
+    </g>
+    <g id="wAntlers" style="display:none">
+      <path d="M138 62 L118 8 M124 26 L96 16 M128 40 L104 44 M262 62 L282 8 M276 26 L304 16 M272 40 L296 44" stroke="${C.line}" stroke-width="13" stroke-linecap="round" fill="none"/>
+      <path d="M138 62 L118 8 M124 26 L96 16 M128 40 L104 44 M262 62 L282 8 M276 26 L304 16 M272 40 L296 44" stroke="#A8743F" stroke-width="8" stroke-linecap="round" fill="none"/>
+      <path d="M88 126 C84 40 316 40 312 126" fill="none" stroke="${C.line}" stroke-width="12" stroke-linecap="round"/>
+      <path d="M88 126 C84 40 316 40 312 126" fill="none" stroke="#7A4A22" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="200" cy="62" r="7" fill="${C.gold}" stroke="${C.line}" stroke-width="2.5"/>
+    </g>
     <g id="crown" style="display:none" transform="rotate(-7 200 52)">
       <path d="M160 54 L163 22 L182 40 L200 12 L218 40 L237 22 L240 54 Z" fill="${C.gold}" stroke="${C.line}" stroke-width="3.5" stroke-linejoin="round"/>
       <path d="M163 46 H237" stroke="#D9A520" stroke-width="3"/>
@@ -579,7 +632,8 @@ svg.innerHTML = `
   <path d="${STAR5}" fill="${C.gold}" stroke="${C.line}" stroke-width="2"/>
   <path d="${STAR5}" fill="${C.gold}" stroke="${C.line}" stroke-width="2"/>
 </g>
-<g id="fx"></g>`;
+<g id="fx"></g>
+<g id="snow" style="display:none"></g>`;
 
 const G = id => document.getElementById(id);
 const hamG = G('hamG'), headG = G('head'), bodyG = G('body'), shadowEl = G('shadow');
@@ -593,8 +647,19 @@ const shoeL = G('shoeL'), shoeR = G('shoeR'), shadesEl = G('shades'), crownEl = 
 const gumG = G('gum'), gumBall = G('gumBall'), gumShine = G('gumShine'), splatEl = G('splat');
 const pressEl = G('press'), starsG = G('stars'), starEls = [...starsG.children];
 const fx = G('fx'), locksG = G('locks');
-const WEAR_EL = { cap:G('wCap'), beanie:G('wBeanie'), headphones:G('wPhones'), crown:crownEl, chain:G('wChain') };
-const BG_EL = { store:G('bgStore'), room:G('bgRoom'), night:G('bgNight') };
+const WEAR_EL = { cap:G('wCap'), beanie:G('wBeanie'), headphones:G('wPhones'), crown:crownEl, chain:G('wChain'),
+                  santa:G('wSanta'), antlers:G('wAntlers'), garland:G('wGarland') };
+const BG_EL = { store:G('bgStore'), room:G('bgRoom'), night:G('bgNight'), newyear:G('bgNY') };
+const frostEl = G('frost'), snowG = G('snow'), noseFill = noseG.querySelector('path');
+const GAR_COLORS = ['#F0405B', '#FFD34D', '#2E9E5E', '#5BC0EB'], garBulbs = [];
+(() => {
+  const g = G('wGarland');
+  el('path', { d:'M146 300 C164 320 182 294 200 312 C218 330 236 294 254 304', stroke:'#2E6B3A', 'stroke-width':3, fill:'none', 'stroke-linecap':'round' }, g);
+  [[154, 308], [170, 312], [186, 304], [202, 314], [218, 320], [234, 308], [250, 304]].forEach(([x, y], i) => {
+    el('rect', { x:x - 3, y:y - 9, width:6, height:5, rx:1.5, fill:'#55585E' }, g);
+    garBulbs.push(el('ellipse', { cx:x, cy:y, rx:5, ry:7, fill:GAR_COLORS[i % 4], stroke:C.line, 'stroke-width':1.8 }, g));
+  });
+})();
 (() => {
   const ch = G('wChain');
   for (let i = 0; i <= 14; i++){
@@ -778,11 +843,13 @@ const MOODS = {
   owl:      { name:'Сова',       e:'🦉', eye:'open', lid:0, tilt:0, big:1, bl:[-11,-1], br:[-11,-1], mouth:'o', blush:.2, secret:1,
               say:['Ты чего не спишь?','Ночь же!','Ух-ух, совы не спят'], hint:'Поиграй глубокой ночью' },
   jealous:  { name:'Ревнивый',   e:'😒', eye:'open', lid:.5, tilt:.3, bl:[2,4], br:[-5,0], mouth:'pout', blush:.35, cheek:1.15, secret:1,
-              say:['Ты на других смотришь?!','А как же я?','Ну и иди к ним'], hint:'Загляни в таблицу к другим игрокам' }
+              say:['Ты на других смотришь?!','А как же я?','Ну и иди к ним'], hint:'Загляни в таблицу к другим игрокам' },
+  frosty:   { name:'Мерзляк',    e:'🥶', eye:'open', lid:.15, tilt:-.4, bl:[-6,-4], br:[-6,-4], mouth:'grit', blush:0, frost:.35, secret:1,
+              say:['Бр-р-р!','Холодно же!','Хватит снежками!'], hint:'Зимой тыкай мимо хомяка — полетят снежки' }
 };
 const ORDER = ['cool','kind','cute','love','laugh','bliss','surprised','angry','offended','bored','sleep','grumpy','stylish',
                'glutton','sneeze','dizzy','carry','dance','gum',
-               'owl','jealous'];
+               'owl','jealous','frosty'];
 const KEY = 'hamster.collected.v1';
 const collected = new Set((store.get(KEY, []) || []).filter(k => ORDER.includes(k)));
 /* Первые 19 — основные качества (за них корона), дальше — секретные. */
@@ -799,6 +866,17 @@ let DAY = store.get('hamster.day', null);
 if (!DAY || DAY.date !== todayKey()) DAY = { date:todayKey(), moods:[], pets:0, seeds:0, catchBest:0, done:false };
 const GAME = { on:false, phase:'', t0:0, score:0, items:[], spawnT:0, hx:200, target:200, endAt:0, best:+store.get('hamster.best', 0) || 0 };
 const W = Object.assign({ head:null, neck:null, face:null, bg:'plain' }, store.get('hamster.wear', {}) || {});
+/* Новый год: сезон с 25 ноября по 14 января. Вещи из подарков — биты extras на сервере (порядок не менять). */
+const NY_ITEMS = ['santa', 'antlers', 'garland', 'tree'];
+const NY = new Set((store.get('hamster.ny', []) || []).filter(k => NY_ITEMS.includes(k)));
+const extrasOf = () => NY_ITEMS.reduce((m, k, i) => NY.has(k) ? m | (1 << i) : m, 0);
+function fromExtras(m){ NY_ITEMS.forEach((k, i) => { if (m & (1 << i)) NY.add(k); }); store.set('hamster.ny', [...NY]); }
+const isNY = (k = todayKey()) => { const m = k.slice(5); return m >= '11-25' || m <= '01-14'; };
+const nyQuestDay = k => { const m = k.slice(5); return m >= '11-28' || m <= '01-14'; };
+function daysToNY(){
+  const d = new Date(), today = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  return Math.round((new Date(d.getFullYear() + 1, 0, 1) - today) / 864e5) % 366;
+}
 
 /* ---------- звук (синтез, без файлов) ---------- */
 const A = { ctx:null, master:null, on: store.get('hamster.sound', true) !== false, noise:null, rustle:null };
@@ -918,7 +996,7 @@ Object.assign(SP, { bounce:sp(), tilt:sp(), hx:sp(), hdx:sp(), hdy:sp(), squash:
 function spring(o, target, k, c, dt){ const a = (target - o.x) * k - o.v * c; o.v += a * dt; o.x += o.v * dt; }
 
 const F = { cur:{}, tgt:{} };
-['lidL','lidR','tiltL','tiltR','bLdy','bLt','bRdy','bRt','blush','tint','cheek','pupil','glow'].forEach(k => { F.cur[k] = 0; F.tgt[k] = 0; });
+['lidL','lidR','tiltL','tiltR','bLdy','bLt','bRdy','bRt','blush','tint','cheek','pupil','glow','frost'].forEach(k => { F.cur[k] = 0; F.tgt[k] = 0; });
 function faceTargets(m){
   const M = MOODS[m];
   F.tgt.lidL = F.tgt.lidR = M.lid || 0;
@@ -927,6 +1005,7 @@ function faceTargets(m){
   F.tgt.blush = M.blush || 0; F.tgt.tint = M.tint || 0; F.tgt.cheek = M.cheek || 1;
   F.tgt.pupil = M.small ? .55 : M.big ? 1.22 : 1;
   F.tgt.glow = M.paw === 'phone' ? .16 : 0;
+  F.tgt.frost = M.frost || 0;
 }
 
 /* ---------- интерфейс ---------- */
@@ -1068,7 +1147,7 @@ function saveProgress(now){
     saveBusy = true;
     const sent = Math.min(PST.unsent, 600);
     return dbCall('hamster_save', { p_device:ME.id, p_secret:ME.secret, p_name:ME.name || null, p_mask:maskOf(), p_code:ME.code,
-                                    p_pets:sent, p_streak:streakNow(), p_catch:GAME.best })
+                                    p_pets:sent, p_streak:streakNow(), p_catch:GAME.best, p_extras:extrasOf() })
       .then(res => {
         if (res === 'ok'){ PST.unsent = Math.max(0, PST.unsent - sent); store.set('hamster.pets', PST); }
         if (res === 'too_fast' || res === 'slow_down'){ clearTimeout(retryTimer); retryTimer = setTimeout(() => saveProgress(true), res === 'too_fast' ? 60000 : 2500); }
@@ -1168,6 +1247,7 @@ restoreForm.addEventListener('submit', async e => {
       if (r.pets > PST.total){ PST.total = r.pets; store.set('hamster.pets', PST); renderPets(); }
       if (r.catch > GAME.best){ GAME.best = r.catch; store.set('hamster.best', GAME.best); }
       if (r.streak > ST.best){ ST.best = r.streak; store.set('hamster.streak', ST); }
+      if (r.extras) fromExtras(r.extras);
       renderChips(); renderCode(); nameInput.value = ME.name || ''; restoreInput.value = '';
       restoreMsg.textContent = `Готово! Качеств: ${mainCount()} из ${MAIN}.`;
       toast(`Вернул! Качеств: ${mainCount()} из ${MAIN}`, 3000);
@@ -1361,7 +1441,14 @@ function gumCenter(){ return { x:200, y:258 + S.gum.r * .55, r:S.gum.r }; }
 /* ---------- касания ---------- */
 let handHideTimer = 0, stageRect = null;
 function firstTouch(hideHint){
-  if (!S.started){ S.started = true; S.nextGum = clock() + rnd(16000, 24000); }
+  if (!S.started){
+    S.started = true; S.nextGum = clock() + rnd(16000, 24000);
+    if (isNY() && store.get('hamster.nyHello', '') !== todayKey()){
+      store.set('hamster.nyHello', todayKey());
+      const n = daysToNY();
+      setTimeout(() => say(n > 0 && n < 60 ? `С наступающим! 🎄 До Нового года ${n} ${plural(n, 'день', 'дня', 'дней')}` : 'С Новым годом! 🎄'), 700);
+    }
+  }
   if (hideHint) hintEl.classList.add('off');
 }
 function trackCircle(p){
@@ -1461,7 +1548,7 @@ function onTap(z, now){
     const g = gumCenter();
     if (Math.hypot(P.downX - g.x, P.downY - g.y) < g.r + 10 && g.r > 8){ popGum(true, now); return; }
   }
-  if (!z) return;
+  if (!z){ if (isNY() && !S.carry) throwSnow(P.downX, P.downY, now); return; }
   if (S.mood === 'sleep'){ setTrans('grumpy', 3200, now); return; }
   if (S.carry) return;
   if (z === 'nose'){
@@ -1651,6 +1738,7 @@ function tick(){
   if (P.down && !S.carry && now - P.downT > 430 && P.moved < 12 && P.downZone && !['nose','ear','cheek'].includes(P.downZone) && S.mood !== 'dance' && !S.gum.on) startCarry(now);
   if (S.carry) updateCarry(dt, now, t);
   updateFlights(dt, now);
+  updateSnowballs(dt, now);
   if (S.spitAt && now > S.spitAt) spitSeeds(now);
   if (S.seeds > 0 && !S.spitAt && now - S.lastSeed > 5000){ S.seeds--; S.lastSeed = now - 2000; SFX.gulp(); }
   updateGum(dt, now);
@@ -1740,6 +1828,7 @@ function animate(dt, t, now, stroking){
   tintEl.setAttribute('opacity', F.cur.tint.toFixed(3));
   veinEl.setAttribute('opacity', (F.cur.tint / .3).toFixed(3));
   glowEl.setAttribute('opacity', F.cur.glow.toFixed(3));
+  frostEl.setAttribute('opacity', F.cur.frost.toFixed(3));
   setPaw(M.paw || 'relax');
 
   /* тело и пружины */
@@ -1751,6 +1840,7 @@ function animate(dt, t, now, stroking){
   if (m === 'bliss') tiltT = S.earSide * 6;
   if (m === 'laugh') bounceT = -Math.abs(Math.sin(t * 13)) * 8;
   if (m === 'angry') jitter = reduceMotion ? 0 : Math.sin(t * 70) * 2.4;
+  if (m === 'frosty') jitter = reduceMotion ? 0 : Math.sin(t * 55) * 1.6;
   if (m === 'love') tiltT = Math.sin(t * 2.2) * 4;
   if (m === 'bored') tiltT = 4;
   if (m === 'sneeze' && since < 900){ tiltT = -6; hdyT = -6; }
@@ -1846,6 +1936,12 @@ function animate(dt, t, now, stroking){
   } else if (m === 'sneeze' && since < 900){
     if (S.fxT > .3){ S.fxT = 0; spawn('text', 286, 150, { text:'а…', size:22, color:C.line, vy:-25, life:.8, stroke:'#FFF9F0' }); }
   }
+  if (m === 'frosty' && S.fxT > .2){ S.fxT = 0; tone({ f:2300, t:.02, vol:.025 }); }
+  if (W.neck === 'garland' && now > (S.garT || 0)){
+    S.garT = now + 420; S.garI = (S.garI || 0) + 1;
+    garBulbs.forEach((b, i) => { b.setAttribute('fill', GAR_COLORS[(i + S.garI) % 4]); b.setAttribute('opacity', (i + S.garI) % 2 ? .6 : 1); });
+  }
+  updateSnow(dt, t);
   phoneLines.setAttribute('transform', `translate(0 ${(-(t * 14) % 12).toFixed(2)})`);
 
   /* звёздочки над головой */
@@ -1964,8 +2060,13 @@ function seeded(str){
   for (let i = 0; i < str.length; i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
   return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return (h >>> 0) / 4294967296; };
 }
+const NY_QUESTS = [
+  { k:'g:gift',   e:'🎁', s:'Подарок', t:'Открой подарок дня' },
+  { k:'m:frosty', e:'🥶', s:'Снежки',  t:'Закидай его снежками — тыкай мимо хомяка' }
+];
 function questsFor(date){
   const r = seeded('hamster:' + date), pool = QUEST_POOL.slice(), out = [];
+  if (nyQuestDay(date)) out.push(NY_QUESTS[Math.floor(r() * NY_QUESTS.length)]);
   while (out.length < 2 && pool.length){
     const q = pool.splice(Math.floor(r() * pool.length), 1)[0];
     if (out.some(o => o.k[0] === q.k[0] && q.k[0] !== 'm')) continue;
@@ -1976,6 +2077,7 @@ function questsFor(date){
 function questProgress(q){
   const [type, v] = q.k.split(':');
   if (type === 'm') return [DAY.moods.includes(v) ? 1 : 0, 1];
+  if (type === 'g') return [DAY.gift ? 1 : 0, 1];
   const have = type === 'p' ? DAY.pets : type === 's' ? DAY.seeds : DAY.catchBest;
   return [Math.min(have, q.n), q.n];
 }
@@ -2024,20 +2126,25 @@ const WEAR_ITEMS = [
   { id:'headphones', slot:'head', e:'🎧', name:'Наушники', need:{ q:12 } },
   { id:'shades',     slot:'face', e:'🕶️', name:'Очки',     need:{ q:15 } },
   { id:'beanie',     slot:'head', e:'🧶', name:'Шапка',    need:{ streak:3 } },
-  { id:'crown',      slot:'head', e:'👑', name:'Корона',   need:{ q:19 } }
+  { id:'crown',      slot:'head', e:'👑', name:'Корона',   need:{ q:19 } },
+  { id:'santa',      slot:'head', e:'🎅', name:'Шапка Санты', need:{ ny:'santa' } },
+  { id:'antlers',    slot:'head', e:'🦌', name:'Рога оленя',  need:{ ny:'antlers' } },
+  { id:'garland',    slot:'neck', e:'💡', name:'Гирлянда',    need:{ ny:'garland' } }
 ];
 const BGS = [
   { id:'plain', e:'⬜', name:'Обычный' },
   { id:'store', e:'🛍️', name:'Магазин' },
   { id:'room',  e:'🛋️', name:'Комната' },
-  { id:'night', e:'🌙', name:'Ночь', need:{ secret:'owl' } }
+  { id:'night', e:'🌙', name:'Ночь', need:{ secret:'owl' } },
+  { id:'newyear', e:'🎄', name:'Ёлка', need:{ ny:'tree' } }
 ];
-const needText = n => n.q ? `${n.q} качеств` : n.streak ? `серия ${n.streak} дня 🔥` : n.secret ? `секрет «${MOODS[n.secret].name}»` : '';
+const needText = n => n.q ? `${n.q} качеств` : n.streak ? `серия ${n.streak} дня 🔥` : n.secret ? `секрет «${MOODS[n.secret].name}»` : n.ny ? 'подарок дня 🎁' : '';
 function itemOpen(it){
   const n = it.need; if (!n) return true;
   if (n.q) return mainCount() >= n.q;
   if (n.streak) return ST.best >= n.streak;
   if (n.secret) return collected.has(n.secret);
+  if (n.ny) return NY.has(n.ny);
   return true;
 }
 function applyWear(){
@@ -2047,6 +2154,7 @@ function applyWear(){
   if (fix) store.set('hamster.wear', W);
   for (const id in WEAR_EL) WEAR_EL[id].style.display = (W.head === id || W.neck === id) ? '' : 'none';
   for (const id in BG_EL) BG_EL[id].style.display = W.bg === id ? '' : 'none';
+  noseFill.setAttribute('fill', W.head === 'antlers' ? '#E2452F' : C.nose);
 }
 function wearToggle(id){
   const it = WEAR_ITEMS.find(x => x.id === id); if (!it) return;
@@ -2180,6 +2288,71 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight'){ GAME.target = clamp(GAME.target + 45, 70, 330); e.preventDefault(); }
 });
 
+/* ---------- Новый год: подарок дня, снег, снежки ---------- */
+const giftBtn = $('#giftBtn'), giftPop = $('#giftPop');
+const giftAvailable = () => isNY() && store.get('hamster.giftDay', '') !== todayKey();
+function renderGift(){ giftBtn.hidden = !giftAvailable(); }
+function openGift(){
+  if (!giftAvailable()) return;
+  audioInit(); firstTouch(true);
+  store.set('hamster.giftDay', todayKey()); DAY.gift = true; saveDay();
+  const left = NY_ITEMS.filter(k => !NY.has(k));
+  let e = '🎉', t = 'Хо-хо-хо! Всё новогоднее у тебя уже есть';
+  if (left.length){
+    const k = left.includes('santa') ? 'santa' : pick(left);
+    NY.add(k); store.set('hamster.ny', [...NY]);
+    const it = [...WEAR_ITEMS, ...BGS].find(x => x.need && x.need.ny === k);
+    e = it.e; t = `${it.name}! Ищи в гардеробе 👕`;
+    store.set('hamster.seen', [...new Set([...(store.get('hamster.seen', []) || []), it.id])]);
+  }
+  giftPop.querySelector('.gp-e').textContent = e; giftPop.querySelector('.gp-t').textContent = t;
+  giftPop.hidden = false; clearTimeout(S.giftT); S.giftT = setTimeout(() => { giftPop.hidden = true; }, 2800);
+  SFX.fanfare(); confetti(); buzz('ok'); SP.bounce.v -= 220;
+  for (let i = 0; i < 10; i++) spawn('spark', rnd(120, 280), rnd(150, 330), { vy:rnd(-90, -40), vx:rnd(-40, 40), life:1, vr:200, color:pick(['#FFD34D', '#F0405B', '#5BC0EB']) });
+  renderGift(); checkQuests(); saveProgress();
+}
+giftBtn.addEventListener('click', openGift);
+const flakes = [];
+function updateSnow(dt, t){
+  const on = isNY() || W.bg === 'newyear';
+  snowG.style.display = on ? '' : 'none';
+  if (!on) return;
+  if (!flakes.length) for (let i = 0; i < (reduceMotion ? 14 : 34); i++){
+    const n = el('circle', { r:rnd(1.6, 3.6).toFixed(1), fill:'#FFFFFF', stroke:'#A9C6E2', 'stroke-width':.8, opacity:rnd(.6, .95).toFixed(2) }, snowG);
+    flakes.push({ n, x:rnd(-80, 480), y:rnd(-300, 560), vy:rnd(18, 42), ph:rnd(0, 6.28), amp:rnd(6, 16) });
+  }
+  for (const f of flakes){
+    f.y += f.vy * dt;
+    if (f.y > 560){ f.y = rnd(-320, -90); f.x = rnd(-80, 480); }
+    f.n.setAttribute('cx', (f.x + Math.sin(t * .8 + f.ph) * f.amp).toFixed(1));
+    f.n.setAttribute('cy', f.y.toFixed(1));
+  }
+}
+const snowballs = [];
+function throwSnow(x, y, now){
+  const n = el('circle', { r:11, fill:'#FFFFFF', stroke:'#9CC3E6', 'stroke-width':2 }, fx);
+  snowballs.push({ n, x0:x, y0:y, t:0, dur:.38 });
+  S.lastAct = now; tone({ f:300, f2:520, t:.08, vol:.05 });
+}
+function updateSnowballs(dt, now){
+  for (let i = snowballs.length - 1; i >= 0; i--){
+    const b = snowballs[i];
+    b.t += dt;
+    const k = Math.min(1, b.t / b.dur), tx = 200 + (S.carry ? S.carry.dx.x : 0), ty = 205 + (S.carry ? S.carry.dy.x : 0);
+    const x = b.x0 + (tx - b.x0) * k, y = b.y0 + (ty - b.y0) * k - Math.sin(k * Math.PI) * 60;
+    b.n.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${(1.3 - k * .5).toFixed(2)})`);
+    if (k >= 1){ b.n.remove(); snowballs.splice(i, 1); snowHit(now); }
+  }
+}
+function snowHit(now){
+  S.snowHits = (S.snowHits || []).filter(t => now - t < 6000); S.snowHits.push(now); S.lastAct = now;
+  hiss({ ff:2200, t:.12, vol:.18 }); SP.squash.v += 2.5; SP.hdx.v += rnd(-80, 80); F.cur.frost = Math.max(F.cur.frost, .3);
+  for (let i = 0; i < 9; i++) spawn('dot', 200 + rnd(-30, 30), 205 + rnd(-24, 24), { r:rnd(2.5, 5), color:'#FFFFFF', stroke:'#9CC3E6', vx:rnd(-140, 140), vy:rnd(-140, 40), g:320, life:.6 });
+  buzz('light');
+  if (S.snowHits.length >= 3 && S.trans !== 'frosty'){ S.snowHits = []; setTrans('frosty', 3400, now); }
+  else if (S.mood !== 'frosty' && !S.trans) say(pick(['Эй! Снежок!', 'Бр!', 'Холодно!']));
+}
+
 /* ---------- Telegram: Хамстер внутри Telegram (Mini App) ---------- */
 const TG = { on:false, app:null, user:null, chat:null };
 function buzz(kind){
@@ -2231,7 +2404,8 @@ function tgSyncIdentity(){
           if (r.pets > PST.total){ PST.total = r.pets; store.set('hamster.pets', PST); renderPets(); }
           if (r.catch > GAME.best){ GAME.best = r.catch; store.set('hamster.best', GAME.best); }
           if (r.streak > ST.best){ ST.best = r.streak; store.set('hamster.streak', ST); }
-          renderChips(); checkNewItems(false);
+          if (r.extras) fromExtras(r.extras);
+          renderChips(); checkNewItems(false); renderGift();
           if (ME.name && !welEl.hidden) closeWelcome();
           toast('Твой Хамстер из Telegram на месте ✈️', 2600);
           tgJoinChat();
@@ -2282,11 +2456,12 @@ faceTargets('neutral');
 for (const k in F.tgt) F.cur[k] = F.tgt[k];
 setEyeType(eyes.L, 'open'); setEyeType(eyes.R, 'open'); setMouth('smirk');
 if (mainCount() === MAIN && !store.get('hamster.crownGiven', false)){ store.set('hamster.crownGiven', true); if (!W.head) W.head = 'crown'; store.set('hamster.wear', W); }
-renderChips(); renderSound(); renderPets(); renderQuest();
+renderChips(); renderSound(); renderPets(); renderQuest(); renderGift();
 checkNewItems(true);
 setInterval(() => { if (PST.unsent > 0) saveProgress(true); }, 20000);
 setInterval(() => {
   if (DAY.date !== todayKey()){ DAY = { date:todayKey(), moods:[], pets:0, seeds:0, catchBest:0, done:false }; saveDay(); renderQuest(); }
+  renderGift();
 }, 30000);
 tick();
 requestAnimationFrame(loop);
@@ -2301,6 +2476,7 @@ window.hamster = {
   game:{ start:() => startGame(), state:() => ({ on:GAME.on, phase:GAME.phase, score:GAME.score, best:GAME.best, items:GAME.items.map(i => [i.x, i.y, i.kind]) }) },
   wear:{ set:id => wearToggle(id), bg:id => setBg(id), state:() => Object.assign({}, W) },
   pets:() => PST.total, quest:() => ({ list:questsFor(DAY.date).map(q => q.k), day:DAY, streak:streakNow() }),
+  isNY:() => isNY(), extras:() => extrasOf(), ny:{ list:() => [...NY], give:k => { NY.add(k); store.set('hamster.ny', [...NY]); renderChips(); } },
   closeBoard:() => closeBoard(), tgInit:app => tgInit(app), tgName:() => tgName(), tg:() => ({ on:TG.on, chat:TG.chat, user:TG.user && TG.user.first_name }), setOthers:n => { S.boardOthers = n; S.boardOpenAt = clock() - 2000; }
 };
 })();
