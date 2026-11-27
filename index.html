@@ -795,7 +795,8 @@ soundBtn.addEventListener('click', () => {
   if (A.on) SFX.squeak(1, 1);
 });
 shareBtn.addEventListener('click', async () => {
-  const data = { title:'Хамстер', text:'Погладь Хамстера и собери все его качества 🐹', url:SHARE_URL };
+  /* Ссылка — внутри текста, без отдельного url: иначе Telegram и другие приложения на iPhone берут только текст. */
+  const data = { title:'Хамстер', text:'Погладь Хамстера и собери все его качества 🐹\n' + SHARE_URL };
   if (navigator.share){
     try { await navigator.share(data); return; } catch (e) { if (e && e.name === 'AbortError') return; }
   }
@@ -1024,7 +1025,7 @@ function enterMood(m, now){
   if (m === 'stylish'){ ruffleHair(260); spawn('text', 300, 40, { text:'фух', size:22, color:C.line, vy:-30, life:1.2 }); }
   if (m === 'offended'){ spawn('steam', 186, 240, { r:4, vx:-70, vy:16, life:.6, grow:1.5 }); spawn('steam', 214, 240, { r:4, vx:70, vy:16, life:.6, grow:1.5 }); }
   if (m === 'grumpy') spawn('text', 270, 60, { text:'?!', size:26, color:C.line, vy:-30, life:1.1 });
-  if (m === 'bored'){ S.nextYawn = now + 2500; if (!S.gum.on) S.nextGum = Math.min(S.nextGum || Infinity, now + rnd(3500, 6000)); }
+  if (m === 'bored'){ S.nextYawn = now + 2500; if (!S.gum.on) S.nextGum = now + rnd(3500, 6000); }
   if (m === 'sneeze'){ S.sneezeStart = now; S.sneezeFired = false; }
   if (m === 'dance'){ S.danceStart = now; S.lastBeat = -1; stage.classList.add('party'); playDance(); }
   if (prev === 'dance' && m !== 'dance') stage.classList.remove('party');
@@ -1264,15 +1265,15 @@ function popGum(byUser, now){
 function updateGum(dt, now){
   if (!S.gum.on){
     const idleMs = now - S.lastAct;
-    const calm = S.started && (S.mood === 'neutral' || S.mood === 'bored') && !S.trans && !S.carry && idleMs > 2500 && idleMs < 17000;
+    const calm = S.started && S.mood === 'bored' && !S.trans && !S.carry && idleMs < 20000;
     if (calm && now > S.nextGum && S.nextGum) startGum(now);
     return;
   }
   const g = S.gum;
   if (!g.deflate && !(S.mood === 'neutral' || S.mood === 'bored')) g.deflate = true;
   if (g.deflate){ g.r -= dt * 90; if (g.r <= 3){ g.on = false; gumG.style.display = 'none'; S.nextGum = now + rnd(15000, 25000); return; } }
-  else if (g.r < 40) g.r = Math.min(40, g.r + dt * (6 + g.r * .5));
-  else { g.hold += dt; if (g.hold > 1.4) { popGum(false, now); return; } }
+  else if (g.r < 40) g.r = Math.min(40, g.r + dt * 9);
+  else { g.hold += dt; if (g.hold > 2.5) { popGum(false, now); return; } }
   const c = gumCenter(), wob = 1 + Math.sin(now / 90) * .02;
   gumBall.setAttribute('cy', c.y.toFixed(1)); gumBall.setAttribute('r', (c.r * wob).toFixed(1));
   gumShine.setAttribute('cx', (c.x - c.r * .4).toFixed(1)); gumShine.setAttribute('cy', (c.y - c.r * .45).toFixed(1));
@@ -1644,7 +1645,8 @@ requestAnimationFrame(loop);
 window.hamster = {
   advance(ms){ for (let i = 0; i < Math.ceil(ms / 16); i++){ clockOff += 16; tick(); } },
   state:() => ({ mood:S.mood, anger:+S.anger.toFixed(2), love:+S.love.toFixed(2), seeds:S.seeds, carry:!!S.carry, gum:S.gum.on,
-                 audio:A.ctx ? A.ctx.state : 'нет', collected:[...collected] }),
+                 audio:A.ctx ? A.ctx.state : 'нет', collected:[...collected],
+                 idle:+((clock() - S.lastAct) / 1000).toFixed(1), gumIn:S.nextGum ? +((S.nextGum - clock()) / 1000).toFixed(1) : null, trans:S.trans }),
   badName, mask:maskOf, dbOn
 };
 })();
