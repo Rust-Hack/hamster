@@ -130,6 +130,9 @@
   .code-row b{font:800 20px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:2px;color:var(--ink)}
   .restore-msg{margin:-4px 2px 0;font-size:13px;color:var(--muted);min-height:1.2em}
   .install{display:block;margin:4px auto 0}
+  .dice{flex:none;width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--bg);font-size:20px;line-height:1;cursor:pointer;padding:0;touch-action:manipulation}
+  .big-btn{display:block;width:100%;height:50px;border-radius:14px;border:0;background:var(--accent);color:#2B1D14;font:inherit;font-weight:800;font-size:17px;cursor:pointer;touch-action:manipulation}
+  .wel-hello{display:block;width:64px;height:64px;border-radius:16px;margin:2px 0 10px}
   @media (prefers-reduced-motion: reduce){ #hint{animation:none} .chip.new{animation:none} .disco{animation:none} }
 </style>
 </head>
@@ -187,6 +190,23 @@
   </section>
 </main>
 
+<div class="sheet" id="welcome" hidden role="dialog" aria-modal="true" aria-labelledby="welTitle">
+  <div class="sheet-card">
+    <img class="wel-hello" src="icon-192.png" alt="" width="64" height="64" onerror="this.remove()">
+    <div class="sheet-head"><h2 id="welTitle">Привет! Я Хамстер</h2></div>
+    <p class="stats">Как тебя записать в таблицу друзей? Оставь ник, который я придумал, крутани 🎲 или впиши свой.</p>
+    <form id="welForm" autocomplete="off">
+      <div class="name-row">
+        <input id="welInput" maxlength="20" placeholder="Твой ник, 2–20 букв" enterkeyhint="go" aria-label="Твой ник">
+        <button type="button" class="dice" id="welDice" aria-label="Другой ник">🎲</button>
+      </div>
+      <button type="submit" class="big-btn">Погнали!</button>
+    </form>
+    <p class="restore-msg" id="welMsg" role="status"></p>
+    <p class="sheet-note">Уже играл на другом телефоне? <button class="link-btn" id="welRestore" type="button">У меня есть код</button> · <button class="link-btn" id="welSkip" type="button">Без таблицы</button></p>
+  </div>
+</div>
+
 <div class="sheet" id="board" hidden role="dialog" aria-modal="true" aria-labelledby="boardTitle">
   <div class="sheet-card">
     <div class="sheet-head">
@@ -198,6 +218,7 @@
     <p class="stats" id="boardStats">Загружаю…</p>
     <form class="name-row" id="nameForm" autocomplete="off">
       <input id="nameInput" maxlength="20" placeholder="Твой ник, 2–20 букв" enterkeyhint="done" aria-label="Твой ник">
+      <button type="button" class="dice" id="nameDice" aria-label="Придумать ник">🎲</button>
       <button type="submit">Сохранить</button>
     </form>
     <ol class="board-list" id="boardList"></ol>
@@ -947,7 +968,49 @@ restoreForm.addEventListener('submit', async e => {
     restoreMsg.textContent = 'Нет связи с базой. Проверь интернет.';
   }
 });
-if (dbOn()){ boardBtn.hidden = false; renderCode(); dbCall('hamster_log_visit', { p_device:ME.id }).catch(() => {}); saveProgress(true); }
+/* готовые ники: прилагательное + слово + число, не длиннее 20 знаков */
+const NICK_A = ['Пушистый','Хрустящий','Сонный','Крутой','Быстрый','Хитрый','Мягкий','Дерзкий','Весёлый','Смелый','Тайный','Шустрый','Ленивый','Модный','Добрый','Сытый','Важный'];
+const NICK_B = ['Бублик','Пельмень','Хомяк','Сухарик','Пончик','Орешек','Тапок','Кексик','Батон','Пирожок','Енот','Бобр','Носок','Пряник','Сырник','Кабачок'];
+function randomNick(){
+  for (let i = 0; i < 30; i++){
+    const n = `${pick(NICK_A)} ${pick(NICK_B)} ${10 + ((Math.random() * 90) | 0)}`;
+    if (n.length <= 20 && !badName(n)) return n;
+  }
+  return 'Хомяк ' + (100 + ((Math.random() * 900) | 0));
+}
+const cleanNick = v => v.replace(/\s+/g, ' ').trim().slice(0, 20);
+$('#nameDice').addEventListener('click', () => { nameInput.value = randomNick(); });
+
+/* знакомство: при первом заходе спросить ник (с готовым вариантом) */
+const welEl = $('#welcome'), welForm = $('#welForm'), welInput = $('#welInput'), welMsg = $('#welMsg');
+function openWelcome(){ welInput.value = randomNick(); welMsg.textContent = ''; welEl.hidden = false; }
+function closeWelcome(){ welEl.hidden = true; store.set('hamster.welcomed', true); }
+$('#welDice').addEventListener('click', () => { welInput.value = randomNick(); welMsg.textContent = ''; });
+$('#welSkip').addEventListener('click', () => { closeWelcome(); toast('Ок! Попасть в таблицу можно потом: кнопка 🏆 вверху', 3200); });
+$('#welRestore').addEventListener('click', () => { closeWelcome(); openBoard(); setTimeout(() => restoreInput.focus(), 80); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !welEl.hidden) closeWelcome(); });
+welForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  const v = cleanNick(welInput.value);
+  if (v.length < 2){ welMsg.textContent = 'Ник — от 2 до 20 букв.'; return; }
+  if (badName(v)){ welMsg.textContent = 'Этот ник не подойдёт, придумай другой 🙂'; return; }
+  welInput.blur();
+  ME.name = v; store.set('hamster.me', ME);
+  const res = await saveProgress(true);
+  if (res === 'bad_word' || res === 'bad_name'){
+    ME.name = ''; store.set('hamster.me', ME);
+    welMsg.textContent = 'Этот ник не подойдёт, придумай другой 🙂'; return;
+  }
+  closeWelcome(); audioInit(); SFX.squeak(1.1, 2);
+  toast(`Ты в таблице как «${v}». Сменить ник можно в 🏆`, 3400);
+});
+
+if (dbOn()){
+  boardBtn.hidden = false; renderCode();
+  dbCall('hamster_log_visit', { p_device:ME.id }).catch(() => {});
+  saveProgress(true);
+  if (!ME.name && !store.get('hamster.welcomed', false)) setTimeout(openWelcome, 400);
+}
 
 /* ---------- на экран «Домой» и работа без интернета ---------- */
 const installBtn = $('#installBtn');
