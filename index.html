@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#F4EDE4">
-<meta name="description" content="Хамстер — погладь хомяка и собери все его настроения.">
+<meta name="description" content="Хамстер — погладь хомяка и собери все его качества.">
 <title>Хамстер</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='16' cy='14' r='9' fill='%23E8A35F' stroke='%232B1D14' stroke-width='3'/%3E%3Ccircle cx='48' cy='14' r='9' fill='%23E8A35F' stroke='%232B1D14' stroke-width='3'/%3E%3Cellipse cx='32' cy='36' rx='26' ry='24' fill='%23E8A35F' stroke='%232B1D14' stroke-width='3'/%3E%3Cpath d='M8 30 C8 12 56 12 56 30 C48 22 16 22 8 30Z' fill='%234A2D1C'/%3E%3Ccircle cx='23' cy='36' r='4' fill='%232B1D14'/%3E%3Ccircle cx='41' cy='36' r='4' fill='%232B1D14'/%3E%3Cpath d='M28 46 Q32 50 36 45' stroke='%232B1D14' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
@@ -34,24 +34,31 @@
   h1{margin:0;font-size:26px;line-height:1.1;letter-spacing:.2px}
   .now{margin-top:3px;font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .now b{color:var(--ink);font-weight:700}
+  .btns{display:flex;gap:8px;flex:none}
   .icon-btn{flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);
     display:grid;place-items:center;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;padding:0}
   .icon-btn svg{width:22px;height:22px}
-  .icon-btn:focus-visible,.chip:focus-visible,.link-btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+  .icon-btn:focus-visible,.chip:focus-visible,.link-btn:focus-visible,#seedBtn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 
   .stage{position:relative;flex:1 1 auto;min-height:380px;max-height:760px;border-radius:28px;overflow:hidden;
     background:radial-gradient(120% 85% at 50% 38%,var(--stage1),var(--stage2));
     touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
     border:1px solid var(--line)}
   @media (hover:hover) and (pointer:fine){ .stage{cursor:none} }
-  #ham{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .disco{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .5s;z-index:0;
+    background:radial-gradient(circle at 18% 28%,rgba(255,70,150,.5),transparent 34%),radial-gradient(circle at 82% 22%,rgba(70,190,255,.5),transparent 34%),
+      radial-gradient(circle at 50% 86%,rgba(255,215,70,.45),transparent 40%),radial-gradient(circle at 86% 74%,rgba(110,255,140,.35),transparent 30%);
+    animation:disco 1.2s linear infinite;animation-play-state:paused}
+  .stage.party .disco{opacity:1;animation-play-state:running}
+  @keyframes disco{to{filter:hue-rotate(360deg)}}
+  #ham{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1}
   #hand{position:absolute;left:0;top:0;width:clamp(72px,24%,112px);pointer-events:none;opacity:0;transition:opacity .18s;will-change:transform;z-index:3;
     filter:drop-shadow(0 4px 6px rgba(43,29,20,.18))}
   #hand.on{opacity:.93}
-  #bubble{position:absolute;left:50%;top:58px;transform:translate(-50%,-6px);max-width:82%;background:#FFFDF9;color:#2B1D14;
+  #bubble{position:absolute;left:50%;top:58px;transform:translate(-50%,-6px) scale(.96);max-width:82%;background:#FFFDF9;color:#2B1D14;
     border:2px solid #2B1D14;border-radius:18px;padding:7px 14px;font-weight:700;font-size:16px;line-height:1.25;text-align:center;
-    opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:2}
-  #bubble.on{opacity:1;transform:translate(-50%,0)}
+    opacity:0;transition:opacity .2s,transform .25s cubic-bezier(.2,1.4,.4,1);pointer-events:none;z-index:2}
+  #bubble.on{opacity:1;transform:translate(-50%,0) scale(1)}
   #toast{position:absolute;left:50%;top:12px;transform:translate(-50%,-8px);width:max-content;max-width:calc(100% - 28px);
     background:var(--toast-bg);color:var(--toast-ink);border-radius:14px;padding:9px 14px;font-size:15px;line-height:1.3;text-align:center;
     opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:4}
@@ -60,6 +67,11 @@
     padding:8px 16px;font-size:15px;font-weight:700;pointer-events:none;z-index:2;animation:pulse 1.6s ease-in-out infinite;white-space:nowrap}
   #hint.off{display:none}
   @keyframes pulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.06)}}
+  #seedBtn{position:absolute;right:12px;bottom:12px;width:56px;height:56px;border-radius:50%;border:2px solid #2B1D14;background:#FFF3DC;
+    display:grid;place-items:center;z-index:3;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;padding:0;
+    box-shadow:0 3px 0 #2B1D14;transition:transform .08s,box-shadow .08s}
+  #seedBtn:active{transform:translateY(2px);box-shadow:0 1px 0 #2B1D14}
+  #seedBtn svg{width:32px;height:32px;pointer-events:none}
 
   .coll{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:10px 12px 12px}
   .coll-head{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);margin:0 2px 8px}
@@ -67,14 +79,14 @@
   .coll-head .sp{flex:1}
   .link-btn{border:0;background:none;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;padding:4px;touch-action:manipulation}
   .chips{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
-  .chip{aspect-ratio:1;width:100%;border-radius:50%;border:1px solid var(--line);background:var(--chip);font-size:20px;line-height:1;
+  .chip{aspect-ratio:1;width:100%;max-width:46px;justify-self:center;border-radius:50%;border:1px solid var(--line);background:var(--chip);font-size:20px;line-height:1;
     display:grid;place-items:center;cursor:pointer;padding:0;touch-action:manipulation;-webkit-tap-highlight-color:transparent;color:var(--muted);font-family:inherit;font-weight:800}
   .chip.locked{background:var(--chip-locked);font-size:16px}
   .chip.now{box-shadow:0 0 0 3px var(--accent)}
   .chip.new{animation:pop .5s ease-out}
   @keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
-  .tip{font-size:12.5px;color:var(--muted);text-align:center;margin:2px 4px 0;line-height:1.35}
-  @media (prefers-reduced-motion: reduce){ #hint{animation:none} .chip.new{animation:none} }
+  .tip{font-size:12.5px;color:var(--muted);text-align:center;margin:8px 4px 0;line-height:1.35}
+  @media (prefers-reduced-motion: reduce){ #hint{animation:none} .chip.new{animation:none} .disco{animation:none} }
 </style>
 </head>
 <body>
@@ -84,10 +96,16 @@
       <h1>Хамстер</h1>
       <div class="now">Сейчас: <b id="nowMood">😏 Спокойный</b></div>
     </div>
-    <button class="icon-btn" id="soundBtn" type="button" aria-label="Звук включён" aria-pressed="true"></button>
+    <div class="btns">
+      <button class="icon-btn" id="shareBtn" type="button" aria-label="Поделиться ссылкой">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>
+      </button>
+      <button class="icon-btn" id="soundBtn" type="button" aria-label="Звук включён" aria-pressed="true"></button>
+    </div>
   </header>
 
   <section class="stage" id="stage" aria-label="Хамстер. Гладь мышкой или пальцем">
+    <div class="disco" aria-hidden="true"></div>
     <svg id="ham" viewBox="0 -60 400 620" preserveAspectRatio="xMidYMax meet" aria-hidden="true"></svg>
     <svg id="hand" viewBox="0 0 100 124" aria-hidden="true">
       <g fill="#F7D0B4" stroke="#2B1D14" stroke-width="3.5" stroke-linejoin="round">
@@ -103,15 +121,21 @@
     <div id="bubble" role="status" aria-live="polite"></div>
     <div id="hint">Погладь Хамстера</div>
     <div id="toast" role="status" aria-live="polite"></div>
+    <button id="seedBtn" type="button" aria-label="Дать семечку">
+      <svg viewBox="0 0 30 30" aria-hidden="true"><g transform="rotate(32 15 15)">
+        <path d="M15 3 C22 8 22 22 15 27 C8 22 8 8 15 3 Z" fill="#2E2E33" stroke="#2B1D14" stroke-width="2"/>
+        <path d="M15 6 V24 M12 9 Q11 15 12 21 M18 9 Q19 15 18 21" stroke="#C4C4CB" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      </g></svg>
+    </button>
   </section>
 
   <section class="coll" aria-label="Качества Хамстера">
     <div class="coll-head">
-      <span>Качества</span><b id="count">0 / 13</b><span class="sp"></span>
+      <span>Качества</span><b id="count">0 / 19</b><span class="sp"></span>
       <button class="link-btn" id="resetBtn" type="button" hidden>собрать заново</button>
     </div>
     <div class="chips" id="chips"></div>
-    <p class="tip" id="tip">Гладь голову, щёки, уши, пузо. Тыкни в нос и в лапку. Нажми на «?» — будет подсказка.</p>
+    <p class="tip">Гладь, тыкай, корми, крути, поднимай. Нажми на «?», будет подсказка.</p>
   </section>
 </main>
 
@@ -137,15 +161,23 @@ function el(tag, attrs, parent){
 }
 let clockOff = 0;
 const clock = () => performance.now() + clockOff;
+const evTime = e => { const ts = e && e.timeStamp; return (ts && ts < 1e11 ? ts : performance.now()) + clockOff; };
 const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const SHARE_URL = 'https://rust-hack.github.io/hamster/';
 
 /* ---------- цвета ---------- */
 const C = {
   line:'#2B1D14', fur:'#E8A35F', cream:'#FCEBD6', hair:'#4A2D1C', hairHi:'#74503A', pink:'#F2A6A4',
-  nose:'#E98585', blush:'#FF8C9E', iris:'#7F97AD', jacket:'#232327', jacketLine:'#0D0D0F', jacketHi:'#4A4A52',
+  nose:'#E98585', blush:'#FF8C9E', iris:'#7F97AD', jacketLine:'#0D0D0F', jacketHi:'#4A4A52',
   jeans:'#B3CBE4', jeansHi:'#D6E5F3', jeansSeam:'#86A3C4', shoe:'#F8F8F4', sole:'#E4E0D6', green:'#2E9E5E',
-  paw:'#F3B9A9', silver:'#CDD1D7', mouth:'#5B2026', tongue:'#E8707A'
+  paw:'#F3B9A9', silver:'#CDD1D7', mouth:'#5B2026', tongue:'#E8707A', gum:'#FF9EC7', gumLine:'#D9488A',
+  gold:'#F7C948'
 };
+const HEART = 'M0 12 C-18 0 -15 -14 -6 -13 C-2 -12.5 0 -9 0 -7 C0 -9 2 -12.5 6 -13 C15 -14 18 0 0 12 Z';
+const SPARK = 'M0 -10 L2.6 -2.6 L10 0 L2.6 2.6 L0 10 L-2.6 2.6 L-10 0 L-2.6 -2.6 Z';
+const STAR5 = (() => { let d = ''; for (let i = 0; i < 10; i++){ const r = i % 2 ? 4.6 : 11, a = -Math.PI / 2 + i * Math.PI / 5; d += (i ? 'L' : 'M') + (Math.cos(a) * r).toFixed(1) + ' ' + (Math.sin(a) * r).toFixed(1) + ' '; } return d + 'Z'; })();
+const SPIRAL = (() => { let d = ''; for (let i = 0; i <= 64; i++){ const a = i / 64 * Math.PI * 4.4, r = 1 + i / 64 * 14; d += (i ? 'L' : 'M') + (Math.cos(a) * r).toFixed(1) + ' ' + (Math.sin(a) * r).toFixed(1) + ' '; } return d; })();
+const SEED = 'M0 -9 C6 -6 6 6 0 10 C-6 6 -6 -6 0 -9 Z';
 
 /* ---------- рисунок ---------- */
 const svg = $('#ham');
@@ -158,8 +190,11 @@ svg.innerHTML = `
   <radialGradient id="jg" cx=".38" cy=".25" r=".95">
     <stop offset="0" stop-color="#3A3A41"/><stop offset=".6" stop-color="#232327"/><stop offset="1" stop-color="#151518"/>
   </radialGradient>
+  <radialGradient id="pressG"><stop offset="0" stop-color="#1A0F08" stop-opacity=".4"/><stop offset="1" stop-color="#1A0F08" stop-opacity="0"/></radialGradient>
+  <linearGradient id="lensG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#454A57"/><stop offset=".5" stop-color="#121216"/><stop offset="1" stop-color="#262A32"/></linearGradient>
   <clipPath id="clipEyeL"><ellipse cx="0" cy="0" rx="17" ry="16"/></clipPath>
   <clipPath id="clipEyeR"><ellipse cx="0" cy="0" rx="17" ry="16"/></clipPath>
+  <clipPath id="clipScreen"><rect x="154" y="355" width="22" height="38" rx="3"/></clipPath>
   <g id="shoeArt">
     <path d="M108 536 C106 514 124 504 150 504 C176 504 198 512 200 532 Z" fill="${C.shoe}" stroke="${C.line}" stroke-width="4" stroke-linejoin="round"/>
     <path d="M118 526 C130 520 150 519 172 521" stroke="#D9D6CE" stroke-width="3" fill="none" stroke-linecap="round"/>
@@ -168,12 +203,10 @@ svg.innerHTML = `
     <path d="M110 539 H196" stroke="${C.green}" stroke-width="2.5" stroke-linecap="round" opacity=".85"/>
   </g>
 </defs>
-<ellipse cx="200" cy="549" rx="134" ry="11" fill="rgba(40,25,10,.16)"/>
+<ellipse id="shadow" cx="200" cy="549" rx="134" ry="11" fill="rgba(40,25,10,.16)"/>
 <g id="hamG">
-  <!-- кроссовки -->
   <g id="shoeL"><use href="#shoeArt"/></g>
   <g id="shoeR"><g transform="translate(400 0) scale(-1 1)"><use href="#shoeArt"/></g></g>
-  <!-- джинсы -->
   <g id="legs" stroke-linejoin="round">
     <path d="M131 446 L125 520 Q160 529 196 522 L199 446 Z" fill="${C.jeans}" stroke="${C.line}" stroke-width="4"/>
     <path d="M201 446 L204 522 Q240 529 275 520 L269 446 Z" fill="${C.jeans}" stroke="${C.line}" stroke-width="4"/>
@@ -182,7 +215,6 @@ svg.innerHTML = `
     <path d="M134 466 L130 514 M266 466 L270 514" stroke="${C.jeansSeam}" stroke-width="2"/>
     <path d="M128 510 Q160 518 195 512 M205 512 Q240 518 272 510" stroke="${C.jeansSeam}" stroke-width="2.5" fill="none"/>
   </g>
-  <!-- куртка, шарф, руки -->
   <g id="body">
     <path d="M110 326 C102 288 140 262 200 260 C260 262 298 288 290 326 Z" fill="#19191C" stroke="${C.line}" stroke-width="4"/>
     <path d="M122 310 C92 316 72 350 70 394 C68 432 82 458 106 464 L294 464 C318 458 332 432 330 394 C328 350 308 316 278 310 Z"
@@ -198,21 +230,17 @@ svg.innerHTML = `
     <circle cx="215" cy="410" r="3.6" fill="${C.silver}" stroke="#55585E" stroke-width="1.2"/>
     <circle cx="215" cy="448" r="3.6" fill="${C.silver}" stroke="#55585E" stroke-width="1.2"/>
     <path d="M234 352 L282 346" stroke="${C.jacketLine}" stroke-width="3.5" stroke-linecap="round"/>
-    <!-- шарф в гусиную лапку -->
     <path d="M146 292 C160 279 240 279 254 292 L252 334 C234 347 166 347 148 334 Z" fill="url(#hound)" stroke="${C.line}" stroke-width="3.5" stroke-linejoin="round"/>
     <path d="M154 306 Q200 319 246 306 M156 322 Q200 335 244 322" stroke="rgba(0,0,0,.33)" stroke-width="2.5" fill="none"/>
-    <!-- воротник -->
     <path d="M118 320 C118 300 128 286 146 278 L158 316 L198 356 L194 364 C166 352 138 342 122 334 Z" fill="#1E1E22" stroke="${C.line}" stroke-width="4" stroke-linejoin="round"/>
     <path d="M282 320 C282 300 272 286 254 278 L242 316 L202 356 L206 364 C234 352 262 342 278 334 Z" fill="#1E1E22" stroke="${C.line}" stroke-width="4" stroke-linejoin="round"/>
     <circle cx="146" cy="294" r="3.6" fill="${C.silver}" stroke="#55585E" stroke-width="1.2"/>
     <circle cx="254" cy="294" r="3.6" fill="${C.silver}" stroke="#55585E" stroke-width="1.2"/>
-    <!-- правая рука (в кармане) -->
     <path d="M284 334 Q326 366 314 406 L290 430" stroke="${C.line}" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     <path d="M284 334 Q326 366 314 406 L290 430" stroke="#26262B" stroke-width="38" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     <path d="M298 350 Q316 364 320 384" stroke="${C.jacketHi}" stroke-width="6" stroke-linecap="round" fill="none" opacity=".45"/>
     <path d="M296 392 Q312 398 330 392" stroke="${C.jacketLine}" stroke-width="3" fill="none"/>
     <path d="M276 422 L300 442" stroke="${C.jacketLine}" stroke-width="6" stroke-linecap="round"/>
-    <!-- левая рука (с жестом) -->
     <path d="M116 334 Q74 366 92 402 L146 396" stroke="${C.line}" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     <path d="M116 334 Q74 366 92 402 L146 396" stroke="#26262B" stroke-width="38" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     <path d="M100 350 Q84 364 82 384" stroke="${C.jacketHi}" stroke-width="6" stroke-linecap="round" fill="none" opacity=".45"/>
@@ -228,8 +256,15 @@ svg.innerHTML = `
       <ellipse cx="163" cy="395" rx="14" ry="13" fill="${C.paw}" stroke="${C.line}" stroke-width="3.5"/>
       <path d="M187 398 L185 409" stroke="${C.silver}" stroke-width="4" stroke-linecap="round"/>
     </g>
+    <g id="pawPhone" style="display:none">
+      <rect x="149" y="349" width="32" height="50" rx="6" fill="#1B1B1F" stroke="${C.line}" stroke-width="3"/>
+      <rect x="154" y="355" width="22" height="38" rx="3" fill="#A8D8FF"/>
+      <g clip-path="url(#clipScreen)"><path id="phoneLines" d="M158 354 H172 M158 360 H168 M158 366 H172 M158 372 H165 M158 378 H172 M158 384 H168 M158 390 H172 M158 396 H165 M158 402 H172 M158 408 H168" stroke="#5F9BD1" stroke-width="2.2" stroke-linecap="round"/></g>
+      <ellipse cx="160" cy="399" rx="15" ry="11" fill="${C.paw}" stroke="${C.line}" stroke-width="3.5"/>
+      <ellipse cx="177" cy="383" rx="5.5" ry="7.5" fill="${C.paw}" stroke="${C.line}" stroke-width="3"/>
+      <path d="M154 402 q4 2 8 -1" stroke="${C.silver}" stroke-width="3" stroke-linecap="round"/>
+    </g>
   </g>
-  <!-- голова -->
   <g id="head">
     <g id="earL"><circle cx="90" cy="92" r="30" fill="${C.fur}" stroke="${C.line}" stroke-width="4"/><circle cx="92" cy="94" r="17" fill="${C.pink}"/></g>
     <g id="earR"><circle cx="310" cy="92" r="30" fill="${C.fur}" stroke="${C.line}" stroke-width="4"/><circle cx="308" cy="94" r="17" fill="${C.pink}"/></g>
@@ -240,6 +275,7 @@ svg.innerHTML = `
     <ellipse id="cheekR" cx="280" cy="230" rx="52" ry="46" fill="${C.fur}"/>
     <ellipse cx="200" cy="182" rx="118" ry="106" fill="${C.fur}"/>
     <path d="M102 254 C104 226 140 214 170 226 C184 218 216 218 230 226 C260 214 296 226 298 254 C296 282 258 294 200 294 C142 294 104 282 102 254 Z" fill="${C.cream}"/>
+    <ellipse id="glow" cx="190" cy="244" rx="80" ry="42" fill="#A8D8FF" opacity="0"/>
     <ellipse id="tint" cx="200" cy="196" rx="112" ry="92" fill="#E2452F" opacity="0"/>
     <ellipse id="blushL" cx="132" cy="242" rx="20" ry="11" fill="${C.blush}" opacity=".2"/>
     <ellipse id="blushR" cx="268" cy="242" rx="20" ry="11" fill="${C.blush}" opacity=".2"/>
@@ -268,76 +304,114 @@ svg.innerHTML = `
         <path d="M183 255 H217 M191.5 248 V262 M200 248 V262 M208.5 248 V262" stroke="${C.line}" stroke-width="2"/>
       </g>
     </g>
+    <g id="gum" style="display:none">
+      <circle id="gumBall" cx="200" cy="262" r="6" fill="${C.gum}" stroke="${C.gumLine}" stroke-width="2.5" opacity=".93"/>
+      <ellipse id="gumShine" cx="194" cy="256" rx="4" ry="2.5" fill="#fff" opacity=".75"/>
+    </g>
+    <g id="splat" opacity="0">
+      <path d="M140 236 C136 214 160 206 176 214 C186 200 214 200 224 214 C242 204 266 214 262 234 C276 244 264 266 246 262 C238 278 214 280 204 268 C190 282 160 278 158 262 C140 266 128 248 140 236 Z"
+        fill="${C.gum}" stroke="${C.gumLine}" stroke-width="2.5" stroke-linejoin="round"/>
+      <circle cx="128" cy="212" r="6" fill="${C.gum}" stroke="${C.gumLine}" stroke-width="2"/>
+      <circle cx="276" cy="252" r="5" fill="${C.gum}" stroke="${C.gumLine}" stroke-width="2"/>
+      <circle cx="214" cy="288" r="4" fill="${C.gum}" stroke="${C.gumLine}" stroke-width="2"/>
+      <ellipse cx="176" cy="226" rx="9" ry="4" fill="#fff" opacity=".55"/>
+    </g>
+    <g id="shades" opacity="0">
+      <path d="M179 190 Q200 183 221 190" stroke="${C.line}" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      <path d="M124 192 L94 184 M276 192 L306 184" stroke="${C.line}" stroke-width="4.5" stroke-linecap="round"/>
+      <path d="M124 186 Q124 180 132 180 H172 Q180 180 179 188 L176 206 Q174 216 164 216 H138 Q126 216 125 204 Z" fill="url(#lensG)" stroke="${C.line}" stroke-width="3.5" stroke-linejoin="round"/>
+      <path d="M276 186 Q276 180 268 180 H228 Q220 180 221 188 L224 206 Q226 216 236 216 H262 Q274 216 275 204 Z" fill="url(#lensG)" stroke="${C.line}" stroke-width="3.5" stroke-linejoin="round"/>
+      <path d="M134 204 L150 184 M143 209 L159 189 M234 204 L250 184 M243 209 L259 189" stroke="#fff" stroke-width="3" opacity=".35" stroke-linecap="round"/>
+    </g>
     <g id="hair">
       <path d="M84 186 C66 118 116 52 200 50 C284 52 334 118 316 186 C300 150 262 132 200 130 C138 132 100 150 84 186 Z" fill="${C.hair}"/>
       <path d="M84 186 C66 118 116 52 200 50 C284 52 334 118 316 186" fill="none" stroke="${C.line}" stroke-width="4" stroke-linecap="round"/>
       <path d="M140 76 Q200 58 256 74" stroke="${C.hairHi}" stroke-width="6" fill="none" stroke-linecap="round"/>
       <g id="locks"></g>
     </g>
+    <g id="crown" style="display:none" transform="rotate(-7 200 52)">
+      <path d="M160 54 L163 22 L182 40 L200 12 L218 40 L237 22 L240 54 Z" fill="${C.gold}" stroke="${C.line}" stroke-width="3.5" stroke-linejoin="round"/>
+      <path d="M163 46 H237" stroke="#D9A520" stroke-width="3"/>
+      <circle cx="200" cy="38" r="4.8" fill="#F0405B" stroke="${C.line}" stroke-width="2"/>
+      <circle cx="178" cy="44" r="3" fill="#5BC0EB" stroke="${C.line}" stroke-width="1.5"/>
+      <circle cx="222" cy="44" r="3" fill="#5BC0EB" stroke="${C.line}" stroke-width="1.5"/>
+    </g>
     <g id="vein" opacity="0" stroke="#D7263D" stroke-width="4.5" stroke-linecap="round" fill="none">
       <path d="M256 60 Q264 68 272 60 M256 84 Q264 76 272 84 M252 64 Q260 72 252 80 M276 64 Q268 72 276 80"/>
     </g>
   </g>
 </g>
+<ellipse id="press" cx="200" cy="200" rx="28" ry="17" fill="url(#pressG)" opacity="0"/>
+<g id="stars" opacity="0">
+  <path d="${STAR5}" fill="${C.gold}" stroke="${C.line}" stroke-width="2"/>
+  <path d="${STAR5}" fill="${C.gold}" stroke="${C.line}" stroke-width="2"/>
+  <path d="${STAR5}" fill="${C.gold}" stroke="${C.line}" stroke-width="2"/>
+</g>
 <g id="fx"></g>`;
 
 const G = id => document.getElementById(id);
-const hamG = G('hamG'), headG = G('head'), bodyG = G('body');
+const hamG = G('hamG'), headG = G('head'), bodyG = G('body'), shadowEl = G('shadow');
 const earL = G('earL'), earR = G('earR');
 const cheekEls = { L:[G('cheekL'), G('cheekLo')], R:[G('cheekR'), G('cheekRo')] };
-const tintEl = G('tint'), blushL = G('blushL'), blushR = G('blushR'), veinEl = G('vein');
-const browL = G('browL'), browR = G('browR'), noseG = G('nose'), whiskG = G('whiskers');
+const tintEl = G('tint'), glowEl = G('glow'), blushL = G('blushL'), blushR = G('blushR'), veinEl = G('vein');
+const browL = G('browL'), browR = G('browR'), noseG = G('nose'), whiskG = G('whiskers'), mouthG = G('mouth');
 const mPath = G('mPath'), mTongue = G('mTongue'), mTeeth = G('mTeeth'), mGrit = G('mGrit');
-const pawRelax = G('pawRelax'), pawPeace = G('pawPeace'), shoeL = G('shoeL'), shoeR = G('shoeR');
+const pawEls = { relax:G('pawRelax'), peace:G('pawPeace'), phone:G('pawPhone') }, phoneLines = G('phoneLines');
+const shoeL = G('shoeL'), shoeR = G('shoeR'), shadesEl = G('shades'), crownEl = G('crown');
+const gumG = G('gum'), gumBall = G('gumBall'), gumShine = G('gumShine'), splatEl = G('splat');
+const pressEl = G('press'), starsG = G('stars'), starEls = [...starsG.children];
 const fx = G('fx'), locksG = G('locks');
 
 /* глаза */
 function buildEye(id, side){
   const g = G(id);
-  const open = el('g', {}, g);
+  const wrap = el('g', {}, g);
+  const open = el('g', {}, wrap);
   el('ellipse', { rx:17, ry:16, fill:'#fff' }, open);
   const look = el('g', {}, open);
   el('circle', { r:11, fill:C.iris }, look);
   el('circle', { r:6.2, fill:'#151515' }, look);
   el('circle', { cx:3.6, cy:-4, r:3.2, fill:'#fff' }, look);
   el('circle', { cx:-4, cy:4, r:1.5, fill:'#fff', opacity:.85 }, look);
-  const lidG = el('g', { 'clip-path':`url(#clip${id[0].toUpperCase()+id.slice(1)})` }, open);
+  const lidG = el('g', { 'clip-path':`url(#clip${id[0].toUpperCase() + id.slice(1)})` }, open);
   const lid = el('path', { fill:C.fur }, lidG);
   const lidLine = el('path', { stroke:C.line, 'stroke-width':3.5, fill:'none', 'stroke-linecap':'round' }, lidG);
   el('ellipse', { rx:17, ry:16, fill:'none', stroke:C.line, 'stroke-width':3 }, open);
-  const alt = el('path', { fill:'none', stroke:C.line, 'stroke-width':4.5, 'stroke-linecap':'round', 'stroke-linejoin':'round', style:'display:none' }, g);
-  return { g, open, look, lid, lidLine, alt, side, type:'open' };
+  const alt = el('path', { fill:'none', stroke:C.line, 'stroke-width':4.5, 'stroke-linecap':'round', 'stroke-linejoin':'round', style:'display:none' }, wrap);
+  return { g, wrap, open, look, lid, lidLine, alt, side, type:'open', want:'open', swapT:1 };
 }
 const eyes = { L:buildEye('eyeL', -1), R:buildEye('eyeR', 1) };
-const HEART = 'M0 12 C-18 0 -15 -14 -6 -13 C-2 -12.5 0 -9 0 -7 C0 -9 2 -12.5 6 -13 C15 -14 18 0 0 12 Z';
 const EYE_ALT = {
   happy:  () => 'M-13 5 Q0 -11 13 5',
   closed: () => 'M-13 -1 Q0 9 13 -1',
   sleep:  () => 'M-13 2 Q0 8 13 2',
   squeeze:(s) => s < 0 ? 'M-10 -9 L9 0 L-10 9' : 'M10 -9 L-9 0 L10 9',
-  heart:  () => HEART
+  heart:  () => HEART,
+  spiral: () => SPIRAL
 };
 function setEyeType(E, type){
-  if (E.type === type) return;
   E.type = type;
   if (type === 'open'){ E.open.style.display = ''; E.alt.style.display = 'none'; return; }
   E.open.style.display = 'none'; E.alt.style.display = '';
   E.alt.setAttribute('d', EYE_ALT[type](E.side));
+  E.alt.removeAttribute('transform');
   if (type === 'heart'){ E.alt.setAttribute('fill', '#F0405B'); E.alt.setAttribute('stroke-width', 3); }
-  else { E.alt.setAttribute('fill', 'none'); E.alt.setAttribute('stroke-width', 4.5); }
+  else { E.alt.setAttribute('fill', 'none'); E.alt.setAttribute('stroke-width', type === 'spiral' ? 3.2 : 4.5); }
 }
+/* смена формы глаз — через быстрое моргание, чтобы не дёргалось */
+function wantEye(E, type){ if (E.want === type) return; E.want = type; if (E.swapT >= .14) E.swapT = 0; }
 function setLid(E, amount, tilt){
   const rx = 17, ry = 16, base = -ry + clamp(amount, 0, 1) * 2 * ry;
   const yIn = base + tilt * 7, yOut = base - tilt * 3;
   const yL = E.side < 0 ? yOut : yIn, yR = E.side < 0 ? yIn : yOut;
   const mid = (yL + yR) / 2 + 3;
-  E.lid.setAttribute('d', `M${-rx-5} ${-ry-9} H${rx+5} V${yR} Q0 ${mid} ${-rx-5} ${yL} Z`);
-  E.lidLine.setAttribute('d', `M${-rx-5} ${yL} Q0 ${mid} ${rx+5} ${yR}`);
+  E.lid.setAttribute('d', `M${-rx-5} ${-ry-9} H${rx+5} V${yR.toFixed(2)} Q0 ${mid.toFixed(2)} ${-rx-5} ${yL.toFixed(2)} Z`);
+  E.lidLine.setAttribute('d', `M${-rx-5} ${yL.toFixed(2)} Q0 ${mid.toFixed(2)} ${rx+5} ${yR.toFixed(2)}`);
 }
 function setBrow(path, side, dy, tilt){
   const inner = side < 0 ? 174 : 226, outer = side < 0 ? 128 : 272, y = 173 + dy;
   const yIn = y + tilt, yOut = y - tilt * .45;
-  path.setAttribute('d', `M${outer} ${yOut} Q${(inner+outer)/2} ${Math.min(yIn, yOut) - 6} ${inner} ${yIn}`);
+  path.setAttribute('d', `M${outer} ${yOut.toFixed(2)} Q${(inner + outer) / 2} ${(Math.min(yIn, yOut) - 6).toFixed(2)} ${inner} ${yIn.toFixed(2)}`);
 }
 
 /* рот */
@@ -347,16 +421,23 @@ const MOUTH = {
   grin: { d:'M182 250 Q200 274 218 250 Q200 255 182 250 Z', fill:1, teeth:1 },
   laugh:{ d:'M174 248 Q200 296 226 248 Q200 255 174 248 Z', fill:1, teeth:1, tongue:[200, 274, 11, 6] },
   o:    { d:'M200 251 C210 251 211 269 200 269 C189 269 190 251 200 251 Z', fill:1 },
+  big:  { d:'M200 248 C216 248 217 280 200 280 C183 280 184 248 200 248 Z', fill:1, tongue:[200, 273, 9, 5] },
   frown:{ d:'M185 261 Q200 249 215 261' },
   grit: { d:'M178 264 L184 258 M222 264 L216 258', grit:1 },
   pout: { d:'M187 256 Q193 250 200 256 Q207 262 213 256' },
   yawn: { d:'M200 249 C215 249 216 278 200 278 C184 278 185 249 200 249 Z', fill:1, tongue:[200, 271, 8, 5] },
   sleep:{ d:'M193 255 Q200 260 207 255' },
-  flat: { d:'M186 257 Q200 253 214 257' }
+  flat: { d:'M186 257 Q200 253 214 257' },
+  wavy: { d:'M182 256 Q188 250 194 256 Q200 262 206 256 Q212 250 218 256' },
+  blow: { d:'M200 251 C206 251 207 261 200 261 C193 261 194 251 200 251 Z', fill:1 },
+  chewA:{ d:'M188 252 Q200 264 212 252' },
+  chewB:{ d:'M191 256 Q200 259 209 256' }
 };
 let mouthNow = '';
+const SP = {};
 function setMouth(type){
   if (mouthNow === type) return;
+  const quiet = type.startsWith('chew') && mouthNow.startsWith('chew');
   mouthNow = type;
   const m = MOUTH[type];
   mPath.setAttribute('d', m.d);
@@ -368,6 +449,7 @@ function setMouth(type){
     mTongue.setAttribute('cx', m.tongue[0]); mTongue.setAttribute('cy', m.tongue[1]);
     mTongue.setAttribute('rx', m.tongue[2]); mTongue.setAttribute('ry', m.tongue[3]);
   } else mTongue.style.display = 'none';
+  if (!quiet && SP.mouth) SP.mouth.v += 7;
 }
 
 /* чёлка из прядей */
@@ -387,16 +469,18 @@ function drawLock(L){
   const lx = L.rx - L.w / 2, rx = L.rx + L.w / 2, tx = L.tx + L.bx, ty = L.ty + L.by;
   const c1x = lx + (tx - lx) * .3 + L.bx * .35 - 3, c1y = L.ry + (ty - L.ry) * .62;
   const c2x = rx + (tx - rx) * .3 + L.bx * .35 + 3, c2y = L.ry + (ty - L.ry) * .62;
-  L.fill.setAttribute('d', `M${lx} ${L.ry} Q${c1x} ${c1y} ${tx} ${ty} Q${c2x} ${c2y} ${rx} ${L.ry} Z`);
-  L.edge.setAttribute('d', `M${lx} ${L.ry + 14} Q${c1x} ${c1y} ${tx} ${ty} Q${c2x} ${c2y} ${rx} ${L.ry + 14}`);
+  const f = n => n.toFixed(1);
+  L.fill.setAttribute('d', `M${lx} ${L.ry} Q${f(c1x)} ${f(c1y)} ${f(tx)} ${f(ty)} Q${f(c2x)} ${f(c2y)} ${rx} ${L.ry} Z`);
+  L.edge.setAttribute('d', `M${lx} ${L.ry + 14} Q${f(c1x)} ${f(c1y)} ${f(tx)} ${f(ty)} Q${f(c2x)} ${f(c2y)} ${rx} ${L.ry + 14}`);
   const sx = L.rx + 2, sy = L.ry + 10;
-  L.shine.setAttribute('d', `M${sx} ${sy} Q${(sx + tx) / 2 + L.bx * .2 + 2} ${(sy + ty) / 2} ${sx + (tx - sx) * .6} ${sy + (ty - sy) * .6}`);
+  L.shine.setAttribute('d', `M${sx} ${sy} Q${f((sx + tx) / 2 + L.bx * .2 + 2)} ${f((sy + ty) / 2)} ${f(sx + (tx - sx) * .6)} ${f(sy + (ty - sy) * .6)}`);
 }
+function ruffleHair(power){ LOCKS.forEach(L => { L.vx += rnd(-power, power); L.vy += rnd(-power, power * .2); }); }
 
 /* ---------- настроения ---------- */
 const MOODS = {
   neutral:  { name:'Спокойный',  e:'😏', eye:'open', lid:.34, tilt:.1, bl:[0,0], br:[-4,-1], mouth:'smirk', blush:.22 },
-  cool:     { name:'Крутой',     e:'😎', eye:'open', lid:.26, tilt:.15, winkR:1, bl:[0,0], br:[-8,-2], mouth:'grin', blush:.25,
+  cool:     { name:'Крутой',     e:'😎', eye:'open', lid:.26, tilt:.15, bl:[0,0], br:[-8,-2], mouth:'grin', blush:.25, shades:1, paw:'peace',
               say:['Йоу ✌️','Я в теме','Всё чётко'], hint:'Тыкни в лапку' },
   kind:     { name:'Добрый',     e:'🥰', eye:'happy', bl:[-3,-2], br:[-3,-2], mouth:'smile', blush:.6,
               say:['Ммм, приятно','Ещё чуть-чуть','Ты добрый'], hint:'Нежно погладь по голове' },
@@ -414,15 +498,28 @@ const MOODS = {
               say:['Ну всё, хватит!','Ррр!','Я злой хомяк!'], hint:'Гладь слишком быстро или тыкай в нос много раз' },
   offended: { name:'Обиженный',  e:'😤', eye:'open', lid:.48, tilt:-.7, bl:[-3,-6], br:[-3,-6], mouth:'pout', blush:.35, cheek:1.2,
               say:['Хмф.','Не разговариваю','Я обиделся'], hint:'Разозли его, а потом оставь в покое' },
-  bored:    { name:'Скучает',    e:'🥱', eye:'open', lid:.6, tilt:-.25, bl:[1,-1], br:[1,-1], mouth:'flat', blush:.15,
-              say:['Скукота…','Ну погладь же','Эх…'], hint:'Не трогай его немного' },
+  bored:    { name:'Скучает',    e:'🥱', eye:'open', lid:.55, tilt:-.2, bl:[1,-1], br:[1,-1], mouth:'flat', blush:.15, paw:'phone',
+              say:['Скукота…','Ну погладь же','Залип в телефон'], hint:'Не трогай его немного' },
   sleep:    { name:'Соня',       e:'😴', eye:'sleep', bl:[1,-1], br:[1,-1], mouth:'sleep', blush:.3, hint:'Не трогай подольше' },
   grumpy:   { name:'Ворчун',     e:'😾', eye:'open', lid:.6, tilt:.7, oneOpen:1, bl:[3,5], br:[-1,2], mouth:'frown', blush:.1,
               say:['Ну кто будит?..','Мфф…','Ещё пять минуточек'], hint:'Разбуди спящего' },
   stylish:  { name:'Модник',     e:'💇', eye:'open', lid:.42, tilt:.55, bl:[1,3], br:[-7,0], mouth:'frown', blush:.2,
-              say:['Не трожь причёску!','Я её час укладывал','Причёска!'], hint:'Растрепли причёску' }
+              say:['Не трожь причёску!','Я её час укладывал','Причёска!'], hint:'Быстро растрепли чёлку' },
+  glutton:  { name:'Обжора',     e:'🌻', eye:'happy', bl:[-4,-2], br:[-4,-2], mouth:'chewA', blush:.6,
+              say:['Ням-ням','Ещё семечку!','Вкуснотища'], hint:'Покорми семечками: кнопка внизу справа' },
+  sneeze:   { name:'Чихун',      e:'🤧', eye:'open', lid:.5, tilt:-.5, bl:[-10,-2], br:[-10,-2], mouth:'o', blush:.45,
+              hint:'Пощекочи нос: поводи по нему пальцем' },
+  dizzy:    { name:'Укачало',    e:'😵', eye:'spiral', bl:[-6,-3], br:[-1,3], mouth:'wavy', blush:.3,
+              say:['Всё кружится…','Ой-ой-ой','Где я?'], hint:'Покрути пальцем кругами вокруг него' },
+  carry:    { name:'Летун',      e:'🪂', eye:'open', lid:0, tilt:0, small:1, bl:[-12,-1], br:[-12,-1], mouth:'laugh', blush:.5,
+              say:['Йии-ха!','Я лечу!','Поставь меня!'], hint:'Зажми его и потяни вверх' },
+  dance:    { name:'Танцор',     e:'🕺', eye:'happy', bl:[-6,-2], br:[-6,-2], mouth:'grin', blush:.6, shades:1,
+              say:['Туц-туц-туц','Погнали!','Я на танцполе'], hint:'Тыкни по кроссовкам три раза подряд' },
+  gum:      { name:'Жвачка',     e:'🫧', eye:'squeeze', bl:[2,5], br:[2,5], mouth:'frown', blush:.5,
+              say:['Эй!','Ну ты чего','Вся морда в жвачке'], hint:'Дождись пузыря из жвачки и лопни его' }
 };
-const ORDER = ['cool','kind','cute','love','laugh','bliss','surprised','angry','offended','bored','sleep','grumpy','stylish'];
+const ORDER = ['cool','kind','cute','love','laugh','bliss','surprised','angry','offended','bored','sleep','grumpy','stylish',
+               'glutton','sneeze','dizzy','carry','dance','gum'];
 const KEY = 'hamster.collected.v1';
 const collected = new Set((store.get(KEY, []) || []).filter(k => ORDER.includes(k)));
 
@@ -478,7 +575,7 @@ function hiss(o){
 const SFX = {
   squeak:(p = 1, n = 2) => { for (let i = 0; i < n; i++) tone({ f:1500 * p, f2:2100 * p, t:.08, vol:.1, delay:i * .12 }); },
   boop:   () => tone({ f:700, f2:300, t:.13, vol:.18 }),
-  yo:     () => { tone({ type:'triangle', f:520, f2:760, t:.13, vol:.14 }); tone({ type:'triangle', f:780, f2:700, t:.15, vol:.12, delay:.14 }); },
+  yo:     () => { tone({ type:'triangle', f:520, f2:760, t:.13, vol:.14 }); tone({ type:'triangle', f:780, f2:700, t:.15, vol:.12, delay:.14 }); tone({ f:2400, f2:3200, t:.05, vol:.05, delay:.3 }); },
   chime:  () => [1046, 1318, 1568].forEach((f, i) => tone({ type:'triangle', f, t:.24, vol:.09, delay:i * .09 })),
   fanfare:() => [784, 988, 1175, 1568].forEach((f, i) => tone({ type:'triangle', f, t:.3, vol:.1, delay:i * .12 })),
   laugh:  () => [1800, 1650, 1720, 1560].forEach((f, i) => tone({ type:'triangle', f, f2:f * 1.25, t:.07, vol:.09, delay:i * .11 })),
@@ -491,31 +588,60 @@ const SFX = {
   puff:   () => hiss({ ff:500, t:.14, vol:.16 }),
   grumble:() => tone({ type:'sawtooth', f:150, f2:115, t:.55, vol:.07, lp:650, trem:9 }),
   fluff:  () => { hiss({ ff:1500, ff2:5000, ft:'bandpass', t:.3, vol:.12 }); SFX.squeak(1.1, 1); },
-  pat:    () => tone({ f:420, f2:300, t:.07, vol:.08 })
+  pat:    () => tone({ f:420, f2:300, t:.07, vol:.08 }),
+  toss:   () => tone({ f:600, f2:1200, t:.12, vol:.06 }),
+  crunch: () => { hiss({ ft:'bandpass', ff:2600, t:.05, vol:.16 }); hiss({ ft:'bandpass', ff:3300, t:.05, vol:.12, delay:.1 }); hiss({ ft:'bandpass', ff:2900, t:.05, vol:.1, delay:.22 }); },
+  gulp:   () => tone({ f:320, f2:150, t:.13, vol:.08 }),
+  spit:   () => { for (let i = 0; i < 8; i++) hiss({ ft:'bandpass', ff:1300 + i * 60, t:.04, vol:.15, delay:i * .06 }); },
+  gumPop: () => { hiss({ ff:3500, t:.08, vol:.32 }); tone({ f:320, f2:90, t:.14, vol:.12 }); },
+  ahh:    () => tone({ type:'triangle', f:480, f2:760, t:.85, vol:.06, a:.25, vib:7, vibD:20 }),
+  achoo:  () => { hiss({ ft:'bandpass', ff:1900, ff2:800, t:.38, vol:.36, a:.01 }); tone({ type:'sawtooth', f:420, f2:170, t:.28, vol:.08, lp:1600 }); },
+  wee:    () => tone({ f:800, f2:1700, t:.32, vol:.1, vib:12, vibD:40 }),
+  land:   () => { tone({ f:110, f2:55, t:.12, vol:.22 }); tone({ f:1300, f2:900, t:.08, vol:.08, delay:.05 }); },
+  dizzy:  () => tone({ type:'triangle', f:620, t:1.3, vol:.06, vib:5, vibD:90, a:.1 }),
+  like:   () => tone({ f:1500, f2:1800, t:.05, vol:.05 })
 };
+function playDance(){
+  if (!A.ctx || !A.on) return;
+  const bass = [110, 110, 131, 147, 165, 147, 131, 98];
+  for (let i = 0; i < 12; i++){
+    const d = .04 + i * .5;
+    tone({ f:150, f2:45, t:.2, vol:.32, delay:d });
+    hiss({ ft:'highpass', ff:7000, t:.05, vol:.07, delay:d + .25 });
+    if (i % 2) hiss({ ft:'bandpass', ff:1600, t:.12, vol:.12, delay:d });
+    tone({ type:'triangle', f:bass[i % 8], t:.32, vol:.13, delay:d });
+    if (i % 4 === 3) tone({ type:'square', f:880, f2:990, t:.08, vol:.025, delay:d + .25, lp:2500 });
+  }
+}
 const ENTER_SFX = {
   cool:SFX.yo, kind:() => SFX.squeak(.8, 1), cute:() => SFX.squeak(1.2, 2), love:() => { SFX.chime(); SFX.squeak(1.1, 1); },
   laugh:SFX.laugh, bliss:SFX.sigh, surprised:() => tone({ f:900, f2:2000, t:.12, vol:.12 }), angry:SFX.growl,
-  offended:SFX.humph, bored:SFX.yawn, grumpy:SFX.grumble, stylish:SFX.fluff
+  offended:SFX.humph, bored:SFX.yawn, grumpy:SFX.grumble, stylish:SFX.fluff, glutton:() => SFX.squeak(1, 2),
+  sneeze:SFX.ahh, dizzy:SFX.dizzy, carry:SFX.wee, gum:SFX.humph
 };
 
 /* ---------- состояние ---------- */
 const P = { id:null, type:'mouse', down:false, over:false, x:200, y:200, px:0, py:0, vx:0, vy:0, speed:0, rub:0, t:0, lastMove:0,
-            downT:0, downX:0, downY:0, moved:0, zone:null, seen:false };
+            downT:0, downX:0, downY:0, downZone:null, moved:0, zone:null };
 const S = { mood:'neutral', moodSince:0, trans:null, transUntil:0, love:0, anger:0, hairMess:0,
             acc:{ head:0, ear:0, cheek:0, belly:0 }, zoneT:{ head:0, ear:0, cheek:0, belly:0 },
-            lastAct:clock(), boops:[], fxT:0, sayT:0, lastSaid:{}, yawnUntil:0, nextYawn:0,
-            blinkT:0, nextBlink:2, earSide:0, started:false };
+            lastAct:clock(), boops:[], feetTaps:[], fxT:0, lastSaid:{}, yawnUntil:0, nextYawn:0,
+            blinkT:0, nextBlink:2, earSide:0, started:false,
+            seeds:0, chewUntil:0, lastSeed:0, spitAt:0, flights:[], cheekCur:1,
+            noseTickle:0, noseT:0, sneezeStart:0, sneezeFired:false,
+            circLast:null, circSum:0, circT:0,
+            carry:null, danceStart:0, lastBeat:-1,
+            gum:{ on:false, r:0, t0:0, hold:0, deflate:false }, nextGum:0, splatT:-1e9,
+            nextIdle:0, lookUntil:0, lookDir:0, sniffUntil:0,
+            shadesA:0, starsA:0, pressA:0, handRot:0, crownShown:false };
 const FAST = 1150;
-
-/* пружинки */
 const sp = () => ({ x:0, v:0 });
-const SP = { bounce:sp(), tilt:sp(), hx:sp(), squash:sp(), body:sp(), earL:sp(), earR:sp(), chL:sp(), chR:sp(), footL:sp(), footR:sp() };
+Object.assign(SP, { bounce:sp(), tilt:sp(), hx:sp(), hdx:sp(), hdy:sp(), squash:sp(), body:sp(), bdx:sp(), earL:sp(), earR:sp(),
+  chL:sp(), chR:sp(), footL:sp(), footR:sp(), mouth:sp(), hand:sp() });
 function spring(o, target, k, c, dt){ const a = (target - o.x) * k - o.v * c; o.v += a * dt; o.x += o.v * dt; }
 
-/* лицо: плавные числа */
 const F = { cur:{}, tgt:{} };
-['lidL','lidR','tiltL','tiltR','bLdy','bLt','bRdy','bRt','blush','tint','cheek','pupil'].forEach(k => { F.cur[k] = 0; F.tgt[k] = 0; });
+['lidL','lidR','tiltL','tiltR','bLdy','bLt','bRdy','bRt','blush','tint','cheek','pupil','glow'].forEach(k => { F.cur[k] = 0; F.tgt[k] = 0; });
 function faceTargets(m){
   const M = MOODS[m];
   F.tgt.lidL = F.tgt.lidR = M.lid || 0;
@@ -523,11 +649,12 @@ function faceTargets(m){
   F.tgt.bLdy = M.bl[0]; F.tgt.bLt = M.bl[1]; F.tgt.bRdy = M.br[0]; F.tgt.bRt = M.br[1];
   F.tgt.blush = M.blush || 0; F.tgt.tint = M.tint || 0; F.tgt.cheek = M.cheek || 1;
   F.tgt.pupil = M.small ? .55 : M.big ? 1.22 : 1;
+  F.tgt.glow = M.paw === 'phone' ? .16 : 0;
 }
 
 /* ---------- интерфейс ---------- */
-const stage = $('#stage'), hand = $('#hand'), bubble = $('#bubble'), toastEl = $('#toast'), hintEl = $('#hint');
-const chipsEl = $('#chips'), countEl = $('#count'), nowEl = $('#nowMood'), resetBtn = $('#resetBtn'), soundBtn = $('#soundBtn');
+const stage = $('#stage'), hand = $('#hand'), bubble = $('#bubble'), toastEl = $('#toast'), hintEl = $('#hint'), seedBtn = $('#seedBtn');
+const chipsEl = $('#chips'), countEl = $('#count'), nowEl = $('#nowMood'), resetBtn = $('#resetBtn'), soundBtn = $('#soundBtn'), shareBtn = $('#shareBtn');
 const isTouchFirst = window.matchMedia && matchMedia('(hover: none)').matches;
 hintEl.textContent = isTouchFirst ? 'Погладь Хамстера пальцем' : 'Кликни по Хамстеру и води мышкой';
 
@@ -557,6 +684,13 @@ function renderChips(newKey){
   });
   countEl.textContent = `${collected.size} / ${ORDER.length}`;
   resetBtn.hidden = collected.size === 0;
+  updateCrown();
+}
+function updateCrown(){
+  const all = collected.size === ORDER.length;
+  crownEl.style.display = all ? '' : 'none';
+  if (all && !S.crownShown){ S.crownShown = true; SP.bounce.v -= 200; }
+  if (!all) S.crownShown = false;
 }
 function markNowChip(){
   chipsEl.querySelectorAll('.chip').forEach(c => c.classList.toggle('now', c.dataset.k === S.mood));
@@ -579,6 +713,14 @@ soundBtn.addEventListener('click', () => {
   renderSound();
   if (A.on) SFX.squeak(1, 1);
 });
+shareBtn.addEventListener('click', async () => {
+  const data = { title:'Хамстер', text:'Погладь Хамстера и собери все его качества 🐹', url:SHARE_URL };
+  if (navigator.share){
+    try { await navigator.share(data); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  try { await navigator.clipboard.writeText(SHARE_URL); toast('Ссылка скопирована, кидай друзьям'); }
+  catch (e) { window.prompt('Скопируй ссылку и кинь друзьям:', SHARE_URL); }
+});
 
 function unlock(m){
   if (m === 'neutral' || collected.has(m)) return;
@@ -586,7 +728,7 @@ function unlock(m){
   renderChips(m);
   const M = MOODS[m];
   if (collected.size === ORDER.length){
-    toast(`Все ${ORDER.length} качеств собраны! Ты лучший друг Хамстера 🏆`, 4200);
+    toast(`Все ${ORDER.length} качеств собраны! Держи корону 👑`, 4200);
     SFX.fanfare(); confetti();
   } else {
     toast(`Новое качество: ${M.e} ${M.name} · ${collected.size}/${ORDER.length}`);
@@ -599,9 +741,11 @@ const parts = [];
 function spawn(type, x, y, o = {}){
   let n;
   if (type === 'heart') n = el('path', { d:HEART, fill:o.color || '#F0405B', stroke:C.line, 'stroke-width':2 }, fx);
-  else if (type === 'spark') n = el('path', { d:'M0 -10 L2.6 -2.6 L10 0 L2.6 2.6 L0 10 L-2.6 2.6 L-10 0 L-2.6 -2.6 Z', fill:o.color || '#FFD34D', stroke:C.line, 'stroke-width':1.6 }, fx);
+  else if (type === 'spark') n = el('path', { d:SPARK, fill:o.color || '#FFD34D', stroke:C.line, 'stroke-width':1.6 }, fx);
   else if (type === 'steam') n = el('circle', { r:o.r || 9, fill:'#FFFFFF', stroke:'#C9C9C9', 'stroke-width':1.5 }, fx);
   else if (type === 'conf') n = el('rect', { x:-4, y:-7, width:8, height:14, rx:2, fill:o.color }, fx);
+  else if (type === 'seed') n = el('path', { d:SEED, fill:'#2E2E33', stroke:C.line, 'stroke-width':1.5 }, fx);
+  else if (type === 'dot') n = el('circle', { r:o.r || 3, fill:o.color || '#BFE6FF', stroke:o.stroke || 'none', 'stroke-width':1.2 }, fx);
   else if (type === 'drop') n = el('path', { d:'M0 -9 C5 -2 7 2 7 5 C7 9 3 11 0 11 C-3 11 -7 9 -7 5 C-7 2 -5 -2 0 -9 Z', fill:'#8FD0FF', stroke:C.line, 'stroke-width':1.8 }, fx);
   else {
     n = el('text', { 'font-size':o.size || 24, 'font-weight':800, fill:o.color || C.line, 'text-anchor':'middle',
@@ -610,7 +754,7 @@ function spawn(type, x, y, o = {}){
   }
   parts.push({ n, x, y, vx:o.vx || 0, vy:o.vy == null ? -40 : o.vy, g:o.g || 0, life:0, max:o.life || 1.2,
                rot:o.rot || 0, vr:o.vr || 0, s:o.s || 1, grow:o.grow || 0 });
-  if (parts.length > 90){ const p = parts.shift(); p.n.remove(); }
+  if (parts.length > 110){ const p = parts.shift(); p.n.remove(); }
 }
 function updateParts(dt){
   for (let i = parts.length - 1; i >= 0; i--){
@@ -618,44 +762,43 @@ function updateParts(dt){
     p.life += dt; p.vy += p.g * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt;
     const k = p.life / p.max;
     if (k >= 1){ p.n.remove(); parts.splice(i, 1); continue; }
-    const op = k < .15 ? k / .15 : 1 - (k - .15) / .85;
+    const op = k < .12 ? k / .12 : 1 - (k - .12) / .88;
     p.n.setAttribute('opacity', op.toFixed(3));
     p.n.setAttribute('transform', `translate(${p.x.toFixed(1)} ${p.y.toFixed(1)}) rotate(${p.rot.toFixed(1)}) scale(${(p.s * (1 + p.grow * k)).toFixed(3)})`);
   }
 }
 function confetti(){
   const cols = ['#F0405B','#FFD34D','#2E9E5E','#7F97AD','#E58A3A','#B07CF0'];
-  for (let i = 0; i < 46; i++){
+  for (let i = 0; i < 50; i++){
     spawn('conf', rnd(40, 360), rnd(-70, -20), { color:pick(cols), vx:rnd(-60, 60), vy:rnd(40, 140), g:180, life:rnd(1.8, 2.8), rot:rnd(0, 360), vr:rnd(-400, 400) });
   }
 }
 
 /* ---------- смена настроения ---------- */
+let pawNow = 'relax';
+function setPaw(kind){
+  if (pawNow === kind) return;
+  pawNow = kind;
+  for (const k in pawEls) pawEls[k].style.display = k === kind ? '' : 'none';
+}
 function enterMood(m, now){
   const prev = S.mood;
   S.mood = m; S.moodSince = now; S.fxT = 0;
   const M = MOODS[m];
   faceTargets(m);
-  const eyeT = M.eye;
-  setEyeType(eyes.L, eyeT);
-  setEyeType(eyes.R, M.winkR ? 'happy' : M.oneOpen ? 'closed' : eyeT);
-  setMouth(M.mouth);
-  pawRelax.style.display = m === 'cool' ? 'none' : '';
-  pawPeace.style.display = m === 'cool' ? '' : 'none';
   nowEl.textContent = `${M.e} ${M.name}`;
   markNowChip();
   if (M.say && (now - (S.lastSaid[m] || -1e9) > 5000)){ S.lastSaid[m] = now; say(pick(M.say)); }
   if (ENTER_SFX[m]) ENTER_SFX[m]();
-  // эффекты на входе
   if (m === 'surprised'){ SP.bounce.v -= 320; spawn('text', 262, 40, { text:'!', size:40, color:'#E2452F', vy:-60, life:1 }); }
-  if (m === 'cool'){ for (let i = 0; i < 3; i++) spawn('spark', 206 + rnd(-10, 30), 372 + rnd(-24, 24), { vy:rnd(-50, -20), vx:rnd(-20, 30), life:1, vr:120 }); }
-  if (m === 'stylish'){
-    LOCKS.forEach(L => { L.vx += rnd(-260, 260); L.vy += rnd(-200, 40); });
-    spawn('text', 300, 40, { text:'фух', size:22, color:C.line, vy:-30, life:1.2 });
-  }
+  if (m === 'cool'){ for (let i = 0; i < 4; i++) spawn('spark', 220 + rnd(-10, 40), 372 + rnd(-30, 24), { vy:rnd(-50, -20), vx:rnd(-20, 30), life:1, vr:120 }); }
+  if (m === 'stylish'){ ruffleHair(260); spawn('text', 300, 40, { text:'фух', size:22, color:C.line, vy:-30, life:1.2 }); }
   if (m === 'offended'){ spawn('steam', 186, 240, { r:4, vx:-70, vy:16, life:.6, grow:1.5 }); spawn('steam', 214, 240, { r:4, vx:70, vy:16, life:.6, grow:1.5 }); }
   if (m === 'grumpy') spawn('text', 270, 60, { text:'?!', size:26, color:C.line, vy:-30, life:1.1 });
-  if (m === 'bored'){ S.nextYawn = now + 600; }
+  if (m === 'bored'){ S.nextYawn = now + 2500; if (!S.gum.on) S.nextGum = Math.min(S.nextGum || Infinity, now + rnd(3500, 6000)); }
+  if (m === 'sneeze'){ S.sneezeStart = now; S.sneezeFired = false; }
+  if (m === 'dance'){ S.danceStart = now; S.lastBeat = -1; stage.classList.add('party'); playDance(); }
+  if (prev === 'dance' && m !== 'dance') stage.classList.remove('party');
   if (prev === 'sleep') S.lastAct = now;
   unlock(m);
 }
@@ -664,7 +807,7 @@ function setTrans(m, ms, now){ S.trans = m; S.transUntil = now + ms; if (S.mood 
 function chooseMood(now, stroking){
   const idle = (now - S.lastAct) / 1000;
   let m;
-  if (S.anger >= .8){ S.trans = null; m = 'angry'; }
+  if (S.anger >= .8 && !S.carry && S.trans !== 'dance'){ S.trans = null; m = 'angry'; }
   else if (S.trans && now < S.transUntil) m = S.trans;
   else {
     S.trans = null;
@@ -677,7 +820,7 @@ function chooseMood(now, stroking){
     else if (S.love >= 1 || (S.mood === 'love' && S.love > .6)) m = 'love';
     else if (S.acc.head > .7) m = 'kind';
     else if (S.acc.cheek > .5) m = 'cute';
-    else if (S.started && idle > 24) m = 'sleep';
+    else if (S.started && idle > 24 && !S.gum.on) m = 'sleep';
     else if (S.started && idle > 9) m = 'bored';
     else m = 'neutral';
     const sticky = ['kind','cute','laugh','bliss','love'];
@@ -689,8 +832,9 @@ function chooseMood(now, stroking){
 /* ---------- где рука ---------- */
 function inE(x, y, cx, cy, rx, ry){ const a = (x - cx) / rx, b = (y - cy) / ry; return a * a + b * b <= 1; }
 function zoneAt(x, y){
+  if (S.carry){ x -= S.carry.dx.x; y -= S.carry.dy.x; }
   if (Math.hypot(x - 90, y - 92) < 34 || Math.hypot(x - 310, y - 92) < 34) return 'ear';
-  if (Math.hypot(x - 200, y - 230) < 20) return 'nose';
+  if (Math.hypot(x - 200, y - 230) < 24) return 'nose';
   if (Math.hypot(x - 168, y - 393) < 25) return 'paw';
   const inHead = inE(x, y, 200, 182, 124, 112) || inE(x, y, 120, 230, 56, 50) || inE(x, y, 280, 230, 56, 50) || inE(x, y, 200, 112, 128, 72);
   if (inHead){
@@ -708,75 +852,99 @@ function toSvg(cx, cy){
   const pt = svg.createSVGPoint(); pt.x = cx; pt.y = cy;
   const r = pt.matrixTransform(m.inverse()); return { x:r.x, y:r.y };
 }
+function gumCenter(){ return { x:200, y:258 + S.gum.r * .55, r:S.gum.r }; }
 
 /* ---------- касания ---------- */
-let handHideTimer = 0;
-function placeHand(e){
-  const r = stage.getBoundingClientRect();
-  P.px = e.clientX - r.left; P.py = e.clientY - r.top;
-}
+let handHideTimer = 0, stageRect = null;
 function firstTouch(hideHint){
-  S.started = true;
+  if (!S.started){ S.started = true; S.nextGum = clock() + rnd(16000, 24000); }
   if (hideHint) hintEl.classList.add('off');
 }
-function onMove(e, now){
-  const p = toSvg(e.clientX, e.clientY);
-  const dt = Math.max(.008, (now - P.t) / 1000);
-  if (P.t){
-    const ivx = (p.x - P.x) / dt, ivy = (p.y - P.y) / dt;
-    P.vx = P.vx * .55 + ivx * .45; P.vy = P.vy * .55 + ivy * .45;
-    P.speed = Math.hypot(P.vx, P.vy);
-    const dist = Math.hypot(p.x - P.x, p.y - P.y);
-    P.rub = P.rub * .75 + (dist / dt) * .25;
-    if (dist > .4) P.lastMove = now;
-    if (P.down) P.moved += dist;
+function trackCircle(p){
+  if (S.carry) return;
+  const dx = p.x - 200, dy = p.y - 205, r = Math.hypot(dx, dy);
+  if (r < 45 || r > 330){ S.circLast = null; return; }
+  const a = Math.atan2(dy, dx);
+  if (S.circLast != null){
+    let da = a - S.circLast;
+    if (da > Math.PI) da -= 2 * Math.PI; if (da < -Math.PI) da += 2 * Math.PI;
+    if (Math.abs(da) < 1.2){ S.circSum += da; S.circT = clock(); }
   }
-  P.x = p.x; P.y = p.y; P.t = now;
-  P.zone = zoneAt(p.x, p.y);
-  placeHand(e);
+  S.circLast = a;
 }
+function onMove(e, t){
+  const p = toSvg(e.clientX, e.clientY);
+  if (P.t){
+    const dt = clamp((t - P.t) / 1000, .004, .1);
+    const dist = Math.hypot(p.x - P.x, p.y - P.y);
+    const ivx = (p.x - P.x) / dt, ivy = (p.y - P.y) / dt;
+    const a = 1 - Math.exp(-dt / .045), b = 1 - Math.exp(-dt / .09);
+    P.vx += (ivx - P.vx) * a; P.vy += (ivy - P.vy) * a;
+    P.speed = Math.hypot(P.vx, P.vy);
+    P.rub += (dist / dt - P.rub) * b;
+    if (dist > .4) P.lastMove = clock();
+    if (P.down) P.moved += dist;
+    trackCircle(p);
+  }
+  P.x = p.x; P.y = p.y; P.t = t;
+  P.zone = zoneAt(p.x, p.y);
+  if (!stageRect) stageRect = stage.getBoundingClientRect();
+  P.px = e.clientX - stageRect.left; P.py = e.clientY - stageRect.top;
+}
+function moveAll(e){
+  stageRect = stage.getBoundingClientRect();
+  const list = e.getCoalescedEvents ? e.getCoalescedEvents() : null;
+  if (list && list.length > 1) list.forEach(ev => onMove(ev, evTime(ev)));
+  else onMove(e, evTime(e));
+}
+const isUI = e => e.target && e.target.closest && e.target.closest('button');
 stage.addEventListener('pointerdown', e => {
+  if (isUI(e)) return;
   if (P.id !== null && P.id !== e.pointerId) return;
   if (e.pointerType === 'mouse' && e.button !== 0) return;
   P.id = e.pointerId; P.type = e.pointerType; P.down = true;
   try { stage.setPointerCapture(e.pointerId); } catch (_) {}
   const now = clock();
-  P.t = 0; onMove(e, now); P.t = now;
-  P.downT = now; P.downX = P.x; P.downY = P.y; P.moved = 0; P.speed = 0; P.rub = 0; P.vx = P.vy = 0;
+  P.t = 0; moveAll(e);
+  P.downT = now; P.downX = P.x; P.downY = P.y; P.downZone = P.zone; P.moved = 0; P.speed = 0; P.rub = 0; P.vx = P.vy = 0;
   audioInit(); firstTouch(true);
-  clearTimeout(handHideTimer); hand.classList.add('on');
+  clearTimeout(handHideTimer); hand.classList.add('on'); SP.hand.v -= 5;
   if (P.zone) S.lastAct = now;
   e.preventDefault();
 });
 stage.addEventListener('pointermove', e => {
   if (P.id !== null && P.id !== e.pointerId) return;
+  if (e.pointerType === 'mouse' && !P.down && isUI(e)){ P.over = false; P.zone = null; hand.classList.remove('on'); return; }
   if (e.pointerType !== 'mouse' && !P.down) return;
   P.type = e.pointerType;
   if (e.pointerType === 'mouse'){ P.over = true; hand.classList.add('on'); }
-  onMove(e, clock());
+  moveAll(e);
   if (P.zone && P.rub > 30 && e.pointerType === 'mouse') firstTouch(false);
 });
 function endPointer(e, cancelled){
   if (P.id !== e.pointerId) return;
   const now = clock();
   audioInit();
+  if (S.carry && !S.carry.fall) dropCarry(now);
   const wasTap = !cancelled && P.down && now - P.downT < 320 && P.moved < 14;
-  if (wasTap){ const z = zoneAt(P.downX, P.downY); if (z) onTap(z, now); }
+  if (wasTap){ const z = zoneAt(P.downX, P.downY); onTap(z, now); }
   P.down = false; P.id = null;
   try { stage.releasePointerCapture(e.pointerId); } catch (_) {}
   if (e.pointerType !== 'mouse'){
     clearTimeout(handHideTimer);
-    if (wasTap) hand.classList.remove('on'); else handHideTimer = setTimeout(() => hand.classList.remove('on'), 650);
+    if (wasTap) handHideTimer = setTimeout(() => hand.classList.remove('on'), 160);
+    else handHideTimer = setTimeout(() => hand.classList.remove('on'), 650);
     P.zone = null;
   }
 }
 stage.addEventListener('pointerup', e => endPointer(e, false));
 stage.addEventListener('pointercancel', e => endPointer(e, true));
 stage.addEventListener('pointerleave', e => {
-  if (e.pointerType === 'mouse'){ P.over = false; P.zone = null; hand.classList.remove('on'); }
+  if (e.pointerType === 'mouse' && !P.down){ P.over = false; P.zone = null; hand.classList.remove('on'); S.circLast = null; }
 });
 stage.addEventListener('contextmenu', e => e.preventDefault());
 stage.addEventListener('touchend', () => audioInit(), { passive:true });
+window.addEventListener('resize', () => { stageRect = null; });
 document.addEventListener('visibilitychange', () => {
   if (!A.ctx) return;
   if (document.hidden) A.ctx.suspend(); else A.ctx.resume();
@@ -784,14 +952,20 @@ document.addEventListener('visibilitychange', () => {
 
 function onTap(z, now){
   S.lastAct = now;
+  if (S.gum.on && !S.gum.deflate){
+    const g = gumCenter();
+    if (Math.hypot(P.downX - g.x, P.downY - g.y) < g.r + 10 && g.r > 8){ popGum(true, now); return; }
+  }
+  if (!z) return;
   if (S.mood === 'sleep'){ setTrans('grumpy', 3200, now); return; }
+  if (S.carry) return;
   if (z === 'nose'){
     S.boops = S.boops.filter(t => now - t < 3500); S.boops.push(now);
-    SFX.boop(); SP.squash.v += 2.2;
+    SFX.boop(); SP.squash.v += 2.2; SP.hdy.v -= 60;
     if (S.boops.length >= 3) S.anger += .35;
     if (S.anger < .8) setTrans('surprised', 1300, now);
   } else if (z === 'paw'){
-    setTrans('cool', 3000, now);
+    setTrans('cool', 3200, now);
   } else if (z === 'cheek'){
     S.acc.cheek += .35; S.zoneT.cheek = now; SFX.squeak(1.25, 1);
     (P.downX < 200 ? SP.chL : SP.chR).v -= 3;
@@ -800,9 +974,118 @@ function onTap(z, now){
   } else if (z === 'belly' || z === 'neck'){
     SP.body.v += 2.4; SFX.puff(); if (z === 'belly'){ S.acc.belly += .25; S.zoneT.belly = now; }
   } else if (z === 'feet'){
-    SP.bounce.v -= 260; SFX.squeak(.9, 1);
+    S.feetTaps = S.feetTaps.filter(t => now - t < 1700); S.feetTaps.push(now);
+    if (S.feetTaps.length >= 3 && S.mood !== 'dance'){ S.feetTaps = []; setTrans('dance', 6200, now); }
+    else { SP.bounce.v -= 260; (P.downX < 200 ? SP.footL : SP.footR).v -= 160; SFX.squeak(.9, 1); }
   } else {
     SP.squash.v += 2; SFX.pat(); S.acc.head += .2; S.zoneT.head = now; S.love += .03;
+  }
+}
+
+/* ---------- семечки ---------- */
+seedBtn.addEventListener('click', () => {
+  audioInit(); firstTouch(true);
+  const now = clock();
+  S.lastAct = now;
+  if (S.flights.length >= 3) return;
+  const r = seedBtn.getBoundingClientRect(), p = toSvg(r.left + r.width / 2, r.top + r.height / 2);
+  const n = el('path', { d:SEED, fill:'#2E2E33', stroke:C.line, 'stroke-width':1.5 }, fx);
+  S.flights.push({ n, x0:p.x, y0:p.y, t:0, dur:.5 });
+  SFX.toss();
+});
+function updateFlights(dt, now){
+  for (let i = S.flights.length - 1; i >= 0; i--){
+    const f = S.flights[i];
+    f.t += dt;
+    const k = Math.min(1, f.t / f.dur), ox = S.carry ? S.carry.dx.x : 0, oy = S.carry ? S.carry.dy.x : 0;
+    const x = f.x0 + (200 + ox - f.x0) * k, y = f.y0 + (256 + oy - f.y0) * k - Math.sin(k * Math.PI) * 140;
+    f.n.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${(k * 540).toFixed(0)}) scale(${(1.4 - k * .5).toFixed(2)})`);
+    if (k >= 1){ f.n.remove(); S.flights.splice(i, 1); eatSeed(now); }
+  }
+}
+function eatSeed(now){
+  S.seeds++; S.lastSeed = now; S.chewUntil = now + 900; S.lastAct = now;
+  SFX.crunch(); SP.chL.v += 1.5; SP.chR.v += 1.5;
+  S.anger = Math.max(0, S.anger - .3); S.love = Math.min(1.05, S.love + .05);
+  for (let i = 0; i < 3; i++) spawn('dot', 200 + rnd(-14, 14), 262, { r:2.2, color:'#9B8F84', vx:rnd(-50, 50), vy:rnd(-40, 10), g:300, life:.5 });
+  if (S.mood === 'sleep'){ setTrans('grumpy', 3000, now); return; }
+  if (S.seeds >= 14 && !S.spitAt) S.spitAt = now + 650;
+  else if (S.seeds >= 6 && !S.carry && S.trans !== 'dance') setTrans('glutton', 2400, now);
+}
+function spitSeeds(now){
+  S.spitAt = 0;
+  const n = S.seeds; S.seeds = 0;
+  say('Тьфу! Перебор'); SFX.spit(); SP.squash.v -= 3; SP.chL.v -= 4; SP.chR.v -= 4;
+  for (let i = 0; i < n; i++){
+    spawn('seed', 200 + rnd(-6, 6), 258, { vx:rnd(-280, 280), vy:rnd(-260, 60), g:200, life:rnd(.8, 1.2), rot:rnd(0, 360), vr:rnd(-720, 720), s:1.2, grow:1.8 });
+  }
+}
+
+/* ---------- жвачка ---------- */
+function startGum(now){ S.gum = { on:true, r:4, t0:now, hold:0, deflate:false }; gumG.style.display = ''; }
+function popGum(byUser, now){
+  const g = gumCenter();
+  S.gum.on = false; gumG.style.display = 'none'; S.splatT = now;
+  SFX.gumPop(); SP.squash.v += 3; SP.hdy.v += 80;
+  for (let i = 0; i < 8; i++) spawn('dot', g.x + rnd(-g.r, g.r), g.y + rnd(-g.r, g.r), { r:rnd(3, 5), color:C.gum, stroke:C.gumLine, vx:rnd(-160, 160), vy:rnd(-160, 60), g:300, life:.6 });
+  S.nextGum = now + rnd(25000, 40000);
+  if (byUser) setTrans('gum', 2600, now);
+  else { say('Упс…'); setTrans('surprised', 1100, now); }
+}
+function updateGum(dt, now){
+  if (!S.gum.on){
+    const idleMs = now - S.lastAct;
+    const calm = S.started && (S.mood === 'neutral' || S.mood === 'bored') && !S.trans && !S.carry && idleMs > 2500 && idleMs < 17000;
+    if (calm && now > S.nextGum && S.nextGum) startGum(now);
+    return;
+  }
+  const g = S.gum;
+  if (!g.deflate && !(S.mood === 'neutral' || S.mood === 'bored')) g.deflate = true;
+  if (g.deflate){ g.r -= dt * 90; if (g.r <= 3){ g.on = false; gumG.style.display = 'none'; S.nextGum = now + rnd(15000, 25000); return; } }
+  else if (g.r < 40) g.r = Math.min(40, g.r + dt * (6 + g.r * .5));
+  else { g.hold += dt; if (g.hold > 1.4) { popGum(false, now); return; } }
+  const c = gumCenter(), wob = 1 + Math.sin(now / 90) * .02;
+  gumBall.setAttribute('cy', c.y.toFixed(1)); gumBall.setAttribute('r', (c.r * wob).toFixed(1));
+  gumShine.setAttribute('cx', (c.x - c.r * .4).toFixed(1)); gumShine.setAttribute('cy', (c.y - c.r * .45).toFixed(1));
+  gumShine.setAttribute('rx', Math.max(1.5, c.r * .22).toFixed(1)); gumShine.setAttribute('ry', Math.max(1, c.r * .13).toFixed(1));
+}
+
+/* ---------- поднять и отпустить ---------- */
+function startCarry(now){
+  S.carry = { gx:P.x, gy:P.y, dx:sp(), dy:sp(), th:0, om:0, lastVx:0, fall:false, vy:0, minDy:0 };
+  setTrans('carry', 1e9, now);
+  SP.hand.v -= 6;
+}
+function dropCarry(now){
+  const c = S.carry;
+  c.fall = true; c.vy = clamp(c.dy.v, -1400, 900);
+  S.transUntil = now + 1e9;
+}
+function updateCarry(dt, now, t){
+  const c = S.carry;
+  if (!c.fall){
+    const tx = clamp(P.x - c.gx, -230, 230), ty = clamp(P.y - c.gy, -340, 40);
+    const oldV = c.dx.v;
+    spring(c.dx, tx, 520, 42, dt); spring(c.dy, ty, 520, 42, dt);
+    const ax = (c.dx.v - oldV) / Math.max(dt, .001);
+    c.om += (-55 * c.th - 4.5 * c.om - clamp(ax, -30000, 30000) * .0035) * dt;
+    c.th = clamp(c.th + c.om * dt, -38, 38);
+    c.minDy = Math.min(c.minDy, c.dy.x);
+    SP.footL.x = -Math.abs(Math.sin(t * 15)) * 60; SP.footR.x = -Math.abs(Math.cos(t * 15)) * 60;
+  } else {
+    c.vy += 2600 * dt; c.dy.x += c.vy * dt;
+    spring(c.dx, 0, 30, 9, dt);
+    c.om += (-80 * c.th - 6 * c.om) * dt; c.th += c.om * dt;
+    c.minDy = Math.min(c.minDy, c.dy.x);
+    if (c.dy.x >= 0){
+      c.dy.x = 0;
+      if (c.vy > 320){ c.vy = -c.vy * .32; SP.squash.v -= 3; SFX.land(); }
+      else if (Math.abs(c.dx.x) < 3){
+        const high = c.minDy < -180;
+        S.carry = null;
+        if (high) setTrans('dizzy', 2600, now); else { say('Ой!'); setTrans('surprised', 900, now); }
+      } else c.vy = 0;
+    }
   }
 }
 
@@ -811,12 +1094,12 @@ let last = clock();
 const ZONE_ACC = { hair:'head', face:'head', neck:'head', nose:'head', ear:'ear', cheek:'cheek', belly:'belly', paw:'belly' };
 function tick(){
   const now = clock();
-  const dt = Math.min(.05, (now - last) / 1000); last = now;
+  const dt = Math.min(.05, Math.max(0, (now - last) / 1000)); last = now;
   const t = now / 1000;
 
   if (now - P.lastMove > 90){ P.vx *= .8; P.vy *= .8; P.speed *= .8; P.rub *= .8; }
   const engaged = P.down || (P.type === 'mouse' && P.over);
-  const stroking = engaged && !!P.zone && now - P.lastMove < 120 && P.rub > 30;
+  const stroking = !S.carry && engaged && !!P.zone && now - P.lastMove < 120 && P.rub > 30;
   const fast = stroking && P.rub > FAST;
 
   if (stroking){
@@ -829,13 +1112,26 @@ function tick(){
       else if (['face','cheek','neck','nose'].includes(P.zone)) S.anger += .7 * dt;
     } else if (P.zone !== 'feet') S.love = Math.min(1.05, S.love + .11 * dt);
     if (!fast) S.anger = Math.max(0, S.anger - .3 * dt);
+    if (!fast && Math.hypot(P.x - 200, P.y - 230) < 30){ S.noseTickle += dt; S.noseT = now; }
   } else {
     S.anger = Math.max(0, S.anger - .12 * dt);
     S.love = Math.max(0, S.love - (S.mood === 'love' ? .15 : .03) * dt);
     S.hairMess = Math.max(0, S.hairMess - .4 * dt);
   }
   for (const k in S.acc) if (now - S.zoneT[k] > 600) S.acc[k] = Math.max(0, S.acc[k] - 1.5 * dt);
+  if (now - S.noseT > 500) S.noseTickle = Math.max(0, S.noseTickle - dt);
   S.anger = Math.min(1.2, S.anger);
+
+  /* приколы */
+  if (S.noseTickle > .9 && !S.trans && !S.carry && S.mood !== 'angry'){ S.noseTickle = 0; setTrans('sneeze', 2500, now); }
+  if (now - S.circT > 800) S.circSum *= Math.exp(-dt * 3);
+  if (Math.abs(S.circSum) > Math.PI * 5 && !S.carry && S.trans !== 'dance'){ S.circSum = 0; setTrans('dizzy', 3400, now); }
+  if (P.down && !S.carry && now - P.downT > 430 && P.moved < 12 && P.downZone && !['nose','ear','cheek'].includes(P.downZone) && S.mood !== 'dance' && !S.gum.on) startCarry(now);
+  if (S.carry) updateCarry(dt, now, t);
+  updateFlights(dt, now);
+  if (S.spitAt && now > S.spitAt) spitSeeds(now);
+  if (S.seeds > 0 && !S.spitAt && now - S.lastSeed > 5000){ S.seeds--; S.lastSeed = now - 2000; SFX.gulp(); }
+  updateGum(dt, now);
 
   chooseMood(now, stroking);
   animate(dt, t, now, stroking);
@@ -847,44 +1143,86 @@ function animate(dt, t, now, stroking){
   const k = 1 - Math.exp(-dt * 12);
   for (const key in F.tgt) F.cur[key] += (F.tgt[key] - F.cur[key]) * k;
   S.fxT += dt;
+  const since = now - S.moodSince;
 
-  /* зевок, моргание */
-  let yawning = false;
+  /* мимика с особыми случаями */
+  let eyeL = M.eye, eyeR = M.winkR ? 'happy' : M.oneOpen ? 'closed' : M.eye, mouth = M.mouth;
+  let lidAdd = 0, lookX = null, lookY = null;
   if (m === 'bored'){
-    if (now > S.nextYawn && now > S.yawnUntil){ S.yawnUntil = now + 1400; S.nextYawn = now + rnd(4500, 6500); SFX.yawn(); }
-    yawning = now < S.yawnUntil;
-    setMouth(yawning ? 'yawn' : M.mouth);
+    if (now > S.nextYawn && now > S.yawnUntil && !S.gum.on){ S.yawnUntil = now + 1400; S.nextYawn = now + rnd(6000, 8000); SFX.yawn(); }
+    if (now < S.yawnUntil){ mouth = 'yawn'; lidAdd = .3; } else { lookX = -3; lookY = 5; }
   }
+  if (m === 'sneeze'){
+    if (since < 900){ lidAdd = since / 900 * .4; }
+    else {
+      if (!S.sneezeFired){
+        S.sneezeFired = true; SFX.achoo(); say('АПЧХИ!');
+        SP.squash.v += 4.5; SP.hdy.v += 160; SP.tilt.v += 40; ruffleHair(420);
+        for (let i = 0; i < 14; i++) spawn('dot', 200, 236, { r:rnd(2, 4), color:'#D8F0FF', stroke:'#8FBEDC', vx:rnd(-260, 260), vy:rnd(-120, 160), g:240, life:rnd(.5, .9) });
+      }
+      if (since < 1500){ eyeL = eyeR = 'squeeze'; mouth = 'big'; } else { eyeL = eyeR = 'happy'; mouth = 'smile'; }
+    }
+  }
+  if (S.chewUntil > now) mouth = ((now / 140) | 0) % 2 ? 'chewA' : 'chewB';
+  else if (S.gum.on && !S.gum.deflate) mouth = 'blow';
+  if (m === 'dance' && ((now - S.danceStart) / 1000) % 2 > 1.8) eyeR = 'happy';
+  setMouth(mouth);
+  wantEye(eyes.L, eyeL); wantEye(eyes.R, eyeR);
+
   S.blinkT += dt;
   if (S.blinkT > S.nextBlink){ S.blinkT = 0; S.nextBlink = rnd(2.2, 5); }
   const blink = S.blinkT < .14 ? Math.sin(S.blinkT / .14 * Math.PI) : 0;
 
+  /* живость в покое */
+  if (m === 'neutral' && !stroking && !S.gum.on && now - S.lastAct > 1800 && now > S.nextIdle){
+    S.nextIdle = now + rnd(3500, 7000);
+    const act = pick(['look','look','ear','sniff','hop','blink2']);
+    if (act === 'look'){ S.lookUntil = now + 1300; S.lookDir = pick([-1, 1]); }
+    else if (act === 'ear') (Math.random() < .5 ? SP.earL : SP.earR).v += rnd(-1, 1) > 0 ? 240 : -240;
+    else if (act === 'sniff') S.sniffUntil = now + 1000;
+    else if (act === 'hop') SP.bounce.v -= 150;
+    else { S.blinkT = 0; S.nextBlink = .3; }
+  }
+
   /* куда смотрит */
   let lx = 0, ly = 0;
-  if (m === 'bored'){ lx = Math.sin(t * .9) * 6; ly = -2; }
+  if (lookX != null){ lx = lookX; ly = lookY; }
   else if (m === 'offended'){ lx = -6; ly = -1; }
+  else if (now < S.lookUntil){ lx = 6 * S.lookDir; ly = -1; }
   else if (P.over || P.down || hand.classList.contains('on')){
     lx = clamp((P.x - 200) * .035, -6, 6); ly = clamp((P.y - 200) * .03, -5, 5);
   }
   const ps = F.cur.pupil;
   for (const s of ['L','R']){
     const E = eyes[s];
+    let sy = 1;
+    if (E.swapT < .14){
+      E.swapT += dt;
+      if (E.want !== E.type && E.swapT >= .07) setEyeType(E, E.want);
+      sy = 1 - Math.sin(Math.min(1, E.swapT / .14) * Math.PI) * .85;
+    } else if (E.want !== E.type){ E.swapT = 0; }
+    E.wrap.setAttribute('transform', `scale(1 ${sy.toFixed(3)})`);
     if (E.type === 'open'){
-      const lid = Math.max(s === 'L' ? F.cur.lidL : F.cur.lidR, blink) + (yawning ? .3 : 0);
+      const lid = Math.max((s === 'L' ? F.cur.lidL : F.cur.lidR) + lidAdd, blink);
       setLid(E, lid, s === 'L' ? F.cur.tiltL : F.cur.tiltR);
       E.look.setAttribute('transform', `translate(${lx.toFixed(2)} ${ly.toFixed(2)}) scale(${ps.toFixed(3)})`);
     } else if (E.type === 'heart'){
       E.alt.setAttribute('transform', `scale(${(1.05 + Math.sin(t * 9) * .12).toFixed(3)})`);
-    } else E.alt.removeAttribute('transform');
+    } else if (E.type === 'spiral'){
+      E.alt.setAttribute('transform', `rotate(${((t * 420 * E.side) % 360).toFixed(1)})`);
+    }
   }
   setBrow(browL, -1, F.cur.bLdy, F.cur.bLt);
   setBrow(browR, 1, F.cur.bRdy, F.cur.bRt);
   blushL.setAttribute('opacity', F.cur.blush.toFixed(3)); blushR.setAttribute('opacity', F.cur.blush.toFixed(3));
   tintEl.setAttribute('opacity', F.cur.tint.toFixed(3));
   veinEl.setAttribute('opacity', (F.cur.tint / .3).toFixed(3));
+  glowEl.setAttribute('opacity', F.cur.glow.toFixed(3));
+  setPaw(M.paw || 'relax');
 
   /* тело и пружины */
   let tiltT = 0, hxT = 0, bounceT = 0, jitter = 0, breathA = .007, breathR = 1.7, squashT = 0, bodyT = 0;
+  let hdxT = 0, hdyT = 0, bdxT = 0;
   if (m === 'kind' && stroking) tiltT = clamp((P.x - 200) * .05, -7, 7);
   if (m === 'offended'){ tiltT = -8; hxT = -10; }
   if (m === 'sleep'){ tiltT = 7; breathA = .016; breathR = .8; }
@@ -892,26 +1230,58 @@ function animate(dt, t, now, stroking){
   if (m === 'laugh') bounceT = -Math.abs(Math.sin(t * 13)) * 8;
   if (m === 'angry') jitter = reduceMotion ? 0 : Math.sin(t * 70) * 2.4;
   if (m === 'love') tiltT = Math.sin(t * 2.2) * 4;
-  if (P.down && P.zone && ['hair','face','nose','cheek','ear'].includes(P.zone)) squashT = .035;
-  if (P.down && P.zone === 'belly') bodyT = .03;
+  if (m === 'bored') tiltT = 4;
+  if (m === 'sneeze' && since < 900){ tiltT = -6; hdyT = -6; }
+  if (m === 'dizzy'){ tiltT = Math.sin(t * 5) * 9; hxT = Math.cos(t * 5) * 7; }
+  if (m === 'carry') tiltT = Math.sin(t * 9) * 5;
+  const headZones = ['hair','face','nose','cheek','ear','neck'];
+  if (P.down && !S.carry && headZones.includes(P.downZone)){
+    hdxT = clamp((P.x - P.downX) * .12, -10, 10); hdyT = clamp((P.y - P.downY) * .08, -6, 6);
+  } else if (stroking && headZones.includes(P.zone)){
+    hdxT = clamp(P.vx * .004, -5, 5); hdyT = clamp(P.vy * .003, -3, 3);
+  }
+  if (stroking && P.zone === 'belly') bdxT = clamp(P.vx * .004, -5, 5);
+  if (P.down && P.zone && ['hair','face','nose','cheek','ear'].includes(P.zone) && !S.carry) squashT = .035;
+  if (P.down && P.zone === 'belly' && !S.carry) bodyT = .03;
+  const chewing = S.chewUntil > now;
+  if (chewing) squashT += Math.sin(now / 70) * .012;
+
+  /* танец */
+  let danceFeet = null;
+  if (m === 'dance'){
+    const beat = (now - S.danceStart) / 500, frac = beat % 1, odd = Math.floor(beat) % 2;
+    bounceT = -Math.abs(Math.sin(Math.PI * beat)) * 14;
+    tiltT = (odd ? 1 : -1) * 7 * Math.sin(Math.PI * frac);
+    hdyT = Math.sin(Math.PI * 2 * beat) * 3;
+    danceFeet = odd ? [-Math.sin(Math.PI * frac) * 12, 0] : [0, -Math.sin(Math.PI * frac) * 12];
+    setPaw(Math.floor(beat / 2) % 2 ? 'peace' : 'relax');
+    if (Math.floor(beat) !== S.lastBeat){
+      S.lastBeat = Math.floor(beat);
+      spawn('text', pick([rnd(40, 100), rnd(300, 360)]), rnd(100, 220), { text:pick(['♪','♫','♬']), size:rnd(24, 34), color:pick(['#F0405B','#5BC0EB','#2E9E5E','#E58A3A']), vy:-70, vx:rnd(-20, 20), life:1.2, stroke:'#FFF9F0' });
+    }
+  }
 
   spring(SP.tilt, tiltT, 60, 12, dt);
   spring(SP.hx, hxT, 60, 12, dt);
-  spring(SP.bounce, bounceT, 260, 18, dt);
+  spring(SP.hdx, hdxT, 170, 10, dt);
+  spring(SP.hdy, hdyT, 170, 10, dt);
+  spring(SP.bdx, bdxT, 160, 10, dt);
+  if (m === 'dance'){ SP.bounce.x += (bounceT - SP.bounce.x) * (1 - Math.exp(-dt * 30)); SP.bounce.v = 0; }
+  else spring(SP.bounce, bounceT, 260, 18, dt);
   spring(SP.squash, squashT, 300, 14, dt);
   spring(SP.body, bodyT, 260, 10, dt);
   spring(SP.earL, 0, 220, 7, dt);
   spring(SP.earR, 0, 220, 7, dt);
   spring(SP.chL, 0, 260, 9, dt);
   spring(SP.chR, 0, 260, 9, dt);
-  spring(SP.footL, 0, 400, 22, dt);
-  spring(SP.footR, 0, 400, 22, dt);
+  if (!S.carry || S.carry.fall){ spring(SP.footL, 0, 400, 22, dt); spring(SP.footR, 0, 400, 22, dt); }
+  spring(SP.mouth, 0, 320, 16, dt);
+  spring(SP.hand, 0, 300, 18, dt);
 
-  /* касание в движении */
   if (stroking){
-    if (P.zone === 'ear'){ const e = P.x < 200 ? SP.earL : SP.earR; e.v += clamp(P.vx, -1500, 1500) * .45 * dt * 10; }
-    if (P.zone === 'cheek'){ const c = P.x < 200 ? SP.chL : SP.chR; c.v -= .9 * dt * 10; }
-    if (P.zone === 'belly'){ SP.body.v += (Math.random() - .5) * 10 * dt * 10; }
+    if (P.zone === 'ear'){ const e = P.x < 200 ? SP.earL : SP.earR; e.v += clamp(P.vx, -1500, 1500) * 4.5 * dt; }
+    if (P.zone === 'cheek'){ const c = P.x < 200 ? SP.chL : SP.chR; c.v -= 9 * dt; }
+    if (P.zone === 'belly') SP.body.v += (Math.random() - .5) * 100 * dt;
   }
 
   /* прядки */
@@ -920,6 +1290,8 @@ function animate(dt, t, now, stroking){
       const mx = (L.rx + L.tx) / 2, my = (L.ry + L.ty) / 2, d = Math.hypot(P.x - mx, P.y - my);
       if (d < 75){ const f = 1 - d / 75; L.vx += clamp(P.vx, -1600, 1600) * f * 5 * dt; L.vy += clamp(P.vy, -1600, 1600) * f * 2.5 * dt; }
     }
+    if (m === 'dance') L.vx += Math.sin(now / 250 * Math.PI) * 30 * dt;
+    if (S.carry && !S.carry.fall) L.vx += S.carry.om * .6 * dt;
     L.vx += (-140 * L.bx - 9 * L.vx) * dt; L.vy += (-140 * L.by - 9 * L.vy) * dt;
     L.bx = clamp(L.bx + L.vx * dt, -30, 30); L.by = clamp(L.by + L.vy * dt, -26, 10);
     drawLock(L);
@@ -928,15 +1300,15 @@ function animate(dt, t, now, stroking){
   /* эффекты по настроению */
   if (m === 'angry'){
     if (S.fxT > .14){ S.fxT = 0; spawn('steam', rnd(80, 100), 70, { r:rnd(6, 10), vx:rnd(-40, -10), vy:rnd(-90, -60), life:.9, grow:1.4 }); spawn('steam', rnd(300, 320), 70, { r:rnd(6, 10), vx:rnd(10, 40), vy:rnd(-90, -60), life:.9, grow:1.4 }); }
-    if (now - S.moodSince > 300 && ((now - S.moodSince) % 1500) < dt * 1000) SFX.growl();
-    if (Math.sin(t * 9) > .96){ SP.footL.v -= 120; }
+    if (since > 300 && (since % 1500) < dt * 1000) SFX.growl();
+    if (Math.sin(t * 9) > .96) SP.footL.v -= 120;
   } else if (m === 'love'){
     if (S.fxT > .32){ S.fxT = 0; spawn('heart', rnd(110, 290), rnd(90, 160), { vy:rnd(-80, -50), vx:rnd(-20, 20), life:1.5, s:rnd(.8, 1.3), rot:rnd(-15, 15) }); }
   } else if (m === 'laugh'){
     if (S.fxT > .45){ S.fxT = 0; spawn('text', Math.random() < .5 ? rnd(40, 90) : rnd(310, 360), rnd(150, 230), { text:pick(['ха','хи','ха-ха']), size:rnd(20, 28), vy:-60, life:1, color:'#E58A3A', stroke:'#FFF9F0' }); SFX.laugh(); }
   } else if (m === 'sleep'){
     if (S.fxT > 1.2){ S.fxT = 0; spawn('text', 280, 70, { text:'Z', size:rnd(22, 32), color:'#6B7FA8', vx:20, vy:-38, life:2.2, grow:.6, stroke:'#FFF9F0' }); }
-    if (((now - S.moodSince) % 2600) < dt * 1000 && now - S.moodSince > 1000) SFX.snore();
+    if ((since % 2600) < dt * 1000 && since > 1000) SFX.snore();
   } else if (m === 'bliss'){
     if (S.fxT > .45){ S.fxT = 0; SP.footR.v -= 140; SFX.thump(); spawn('heart', S.earSide < 0 ? 70 : 330, 60, { vy:-50, life:1.1, s:.7, color:'#FF8C9E' }); }
   } else if (m === 'kind'){
@@ -944,33 +1316,76 @@ function animate(dt, t, now, stroking){
   } else if (m === 'cute'){
     if (S.fxT > .7){ S.fxT = 0; spawn('spark', pick([80, 320]) + rnd(-10, 10), rnd(210, 250), { vy:-30, life:.9, s:.8, vr:90 }); }
   } else if (m === 'cool'){
-    if (S.fxT > .8){ S.fxT = 0; spawn('spark', 210 + rnd(-6, 20), 372 + rnd(-20, 20), { vy:-30, life:.8, s:.7, vr:120 }); }
+    if (S.fxT > .8){ S.fxT = 0; spawn('spark', 222 + rnd(-6, 30), 372 + rnd(-24, 20), { vy:-30, life:.8, s:.7, vr:120 }); }
   } else if (m === 'bored'){
-    if (S.fxT > 3.5){ S.fxT = 0; if (Math.random() < .5) spawn('drop', 300, 150, { vy:30, g:60, life:1.2, s:.8 }); }
+    if (S.fxT > 2.6 && now > S.yawnUntil){ S.fxT = 0; spawn('heart', 165, 344, { vy:-45, life:1, s:.5, color:'#5BC0EB' }); SFX.like(); }
+  } else if (m === 'glutton'){
+    if (S.fxT > .6){ S.fxT = 0; spawn('text', pick([70, 330]), rnd(180, 230), { text:'ням', size:20, color:'#E58A3A', vy:-40, life:.9, stroke:'#FFF9F0' }); }
+  } else if (m === 'sneeze' && since < 900){
+    if (S.fxT > .3){ S.fxT = 0; spawn('text', 286, 150, { text:'а…', size:22, color:C.line, vy:-25, life:.8, stroke:'#FFF9F0' }); }
   }
+  phoneLines.setAttribute('transform', `translate(0 ${(-(t * 14) % 12).toFixed(2)})`);
+
+  /* звёздочки над головой */
+  S.starsA += ((m === 'dizzy' ? 1 : 0) - S.starsA) * (1 - Math.exp(-dt * 8));
+  starsG.setAttribute('opacity', S.starsA.toFixed(3));
+  if (S.starsA > .01) starEls.forEach((s, i) => {
+    const a = t * 4 + i * Math.PI * 2 / 3;
+    s.setAttribute('transform', `translate(${(200 + SP.hx.x + Math.cos(a) * 92).toFixed(1)} ${(58 + Math.sin(a) * 20).toFixed(1)}) rotate(${(t * 200 + i * 40).toFixed(0)}) scale(${(.85 + Math.sin(a) * .25).toFixed(2)})`);
+  });
+
+  /* очки */
+  S.shadesA += (((M.shades ? 1 : 0)) - S.shadesA) * (1 - Math.exp(-dt * 9));
+  shadesEl.setAttribute('opacity', clamp(S.shadesA * 1.4, 0, 1).toFixed(3));
+  shadesEl.setAttribute('transform', `translate(0 ${((1 - S.shadesA) * -46).toFixed(2)})`);
+
+  /* клякса от жвачки */
+  const st = (now - S.splatT) / 1000;
+  if (st < 3){
+    const op = st < .1 ? st / .1 : st > 1.6 ? 1 - (st - 1.6) / 1.4 : 1;
+    const sc = st < .12 ? .6 + st / .12 * .4 : 1;
+    splatEl.setAttribute('opacity', clamp(op, 0, 1).toFixed(3));
+    splatEl.setAttribute('transform', `translate(200 240) scale(${sc.toFixed(3)}) translate(-200 -240)`);
+  } else splatEl.setAttribute('opacity', 0);
 
   /* сопение носом */
-  const sniffing = m === 'neutral' || m === 'cute' || m === 'surprised' || (stroking && P.zone === 'nose');
-  const sniff = sniffing ? Math.max(0, Math.sin(t * 2.3)) * Math.sin(t * 34) * .06 : 0;
+  const sniffing = m === 'neutral' || m === 'cute' || m === 'surprised' || now < S.sniffUntil || (m === 'sneeze' && since < 900) || (stroking && P.zone === 'nose');
+  const sniffAmp = (m === 'sneeze' && since < 900) || now < S.sniffUntil ? .12 : .06;
+  const sniff = sniffing ? Math.max(0, Math.sin(t * 2.3) * (now < S.sniffUntil || m === 'sneeze' ? 0 : 1) + (now < S.sniffUntil || m === 'sneeze' ? 1 : 0)) * Math.sin(t * 34) * sniffAmp : 0;
   noseG.setAttribute('transform', `translate(200 230) scale(${(1 + sniff).toFixed(3)} ${(1 - sniff).toFixed(3)}) translate(-200 -230)`);
   whiskG.setAttribute('transform', `translate(0 ${(sniff * 18).toFixed(2)})`);
+  const ms = 1 + clamp(SP.mouth.x, -.3, .4) * .25;
+  mouthG.setAttribute('transform', `translate(200 256) scale(${ms.toFixed(3)}) translate(-200 -256)`);
 
   /* применяем */
   const breath = Math.sin(t * breathR * Math.PI) * breathA;
-  hamG.setAttribute('transform', `translate(${jitter.toFixed(2)} ${SP.bounce.x.toFixed(2)}) translate(200 548) scale(${(1 - breath * .4).toFixed(4)} ${(1 + breath).toFixed(4)}) translate(-200 -548)`);
+  let cdx = 0, cdy = 0, rot = '';
+  if (S.carry){ cdx = S.carry.dx.x; cdy = S.carry.dy.x; rot = ` rotate(${S.carry.th.toFixed(2)} ${S.carry.gx.toFixed(1)} ${S.carry.gy.toFixed(1)})`; }
+  hamG.setAttribute('transform', `translate(${(jitter + cdx).toFixed(2)} ${(SP.bounce.x + cdy).toFixed(2)})${rot} translate(200 548) scale(${(1 - breath * .4).toFixed(4)} ${(1 + breath).toFixed(4)}) translate(-200 -548)`);
+  const lift = clamp(-(SP.bounce.x + cdy), 0, 400), shS = clamp(1 - lift / 420, .35, 1);
+  shadowEl.setAttribute('transform', `translate(${(cdx * .9).toFixed(1)} 0) translate(200 549) scale(${shS.toFixed(3)} ${shS.toFixed(3)}) translate(-200 -549)`);
+  shadowEl.setAttribute('opacity', (.4 + shS * .6).toFixed(3));
   const sq = clamp(SP.squash.x, -.12, .12);
-  headG.setAttribute('transform', `translate(${SP.hx.x.toFixed(2)} 0) rotate(${SP.tilt.x.toFixed(2)} 200 300) translate(200 292) scale(${(1 + sq * .6).toFixed(4)} ${(1 - sq).toFixed(4)}) translate(-200 -292)`);
+  headG.setAttribute('transform', `translate(${(SP.hx.x + SP.hdx.x).toFixed(2)} ${SP.hdy.x.toFixed(2)}) rotate(${SP.tilt.x.toFixed(2)} 200 300) translate(200 292) scale(${(1 + sq * .6).toFixed(4)} ${(1 - sq).toFixed(4)}) translate(-200 -292)`);
   const bs = clamp(SP.body.x, -.1, .1);
-  bodyG.setAttribute('transform', `translate(200 464) scale(${(1 + bs * .6).toFixed(4)} ${(1 - bs).toFixed(4)}) translate(-200 -464)`);
+  bodyG.setAttribute('transform', `translate(${SP.bdx.x.toFixed(2)} 0) translate(200 464) scale(${(1 + bs * .6).toFixed(4)} ${(1 - bs).toFixed(4)}) translate(-200 -464)`);
   earL.setAttribute('transform', `rotate(${clamp(SP.earL.x, -28, 28).toFixed(2)} 104 112)`);
   earR.setAttribute('transform', `rotate(${clamp(SP.earR.x, -28, 28).toFixed(2)} 296 112)`);
-  const ch = F.cur.cheek;
-  const cL = clamp(SP.chL.x, -.2, .2), cR = clamp(SP.chR.x, -.2, .2);
+  const chTarget = F.cur.cheek + Math.min(S.seeds, 14) * .03;
+  S.cheekCur += (chTarget - S.cheekCur) * (1 - Math.exp(-dt * 8));
+  const ch = S.cheekCur, cL = clamp(SP.chL.x, -.2, .25), cR = clamp(SP.chR.x, -.2, .25);
   const tL = `translate(120 230) scale(${(ch + cL).toFixed(4)} ${(ch - cL * .5).toFixed(4)}) translate(-120 -230)`;
   const tR = `translate(280 230) scale(${(ch + cR).toFixed(4)} ${(ch - cR * .5).toFixed(4)}) translate(-280 -230)`;
   cheekEls.L.forEach(e => e.setAttribute('transform', tL)); cheekEls.R.forEach(e => e.setAttribute('transform', tR));
-  shoeL.setAttribute('transform', `translate(0 ${clamp(SP.footL.x * .08, -12, 0).toFixed(2)})`);
-  shoeR.setAttribute('transform', `translate(0 ${clamp(SP.footR.x * .08, -12, 0).toFixed(2)})`);
+  const fL = danceFeet ? danceFeet[0] : clamp(SP.footL.x * .08, -12, 0), fR = danceFeet ? danceFeet[1] : clamp(SP.footR.x * .08, -12, 0);
+  shoeL.setAttribute('transform', `translate(0 ${fL.toFixed(2)})`);
+  shoeR.setAttribute('transform', `translate(0 ${fR.toFixed(2)})`);
+
+  /* тень под ладонью */
+  const pressT = S.carry ? 0 : (P.down && P.zone) ? .55 : (stroking ? .25 : 0);
+  S.pressA += (pressT - S.pressA) * (1 - Math.exp(-dt * 14));
+  pressEl.setAttribute('opacity', S.pressA.toFixed(3));
+  if (S.pressA > .01){ pressEl.setAttribute('cx', P.x.toFixed(1)); pressEl.setAttribute('cy', (P.y + 6).toFixed(1)); }
 
   /* шорох шерсти */
   if (A.rustle && A.ctx){
@@ -980,8 +1395,9 @@ function animate(dt, t, now, stroking){
 
   /* рука */
   if (hand.classList.contains('on')){
-    const rot = clamp(P.vx * .008, -14, 14), sc = P.down ? .95 : 1;
-    hand.style.transform = `translate(${P.px.toFixed(1)}px, ${P.py.toFixed(1)}px) translate(-50%, -72%) rotate(${rot.toFixed(1)}deg) scale(${sc})`;
+    S.handRot += (clamp(P.vx * .008, -14, 14) - S.handRot) * (1 - Math.exp(-dt * 14));
+    const sc = (P.down ? .95 : 1) * (1 + clamp(SP.hand.x, -.3, .3) * .3) * (S.carry && !S.carry.fall ? .9 : 1);
+    hand.style.transform = `translate(${P.px.toFixed(1)}px, ${P.py.toFixed(1)}px) translate(-50%, -72%) rotate(${S.handRot.toFixed(1)}deg) scale(${sc.toFixed(3)})`;
   }
 
   updateParts(dt);
@@ -998,7 +1414,9 @@ requestAnimationFrame(loop);
 /* для проверки в консоли: hamster.state() */
 window.hamster = {
   advance(ms){ for (let i = 0; i < Math.ceil(ms / 16); i++){ clockOff += 16; tick(); } },
-  state:() => ({ mood:S.mood, anger:+S.anger.toFixed(2), love:+S.love.toFixed(2), audio:A.ctx ? A.ctx.state : 'нет', collected:[...collected] }) };
+  state:() => ({ mood:S.mood, anger:+S.anger.toFixed(2), love:+S.love.toFixed(2), seeds:S.seeds, carry:!!S.carry, gum:S.gum.on,
+                 audio:A.ctx ? A.ctx.state : 'нет', collected:[...collected] })
+};
 })();
 </script>
 </body>
