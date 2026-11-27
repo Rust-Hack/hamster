@@ -992,6 +992,7 @@ faceTargets('neutral');
 for (const k in F.tgt) F.cur[k] = F.tgt[k];
 setEyeType(eyes.L, 'open'); setEyeType(eyes.R, 'open'); setMouth('smirk');
 renderChips(); renderSound();
+tick();
 requestAnimationFrame(loop);
 
 /* для проверки в консоли: hamster.state() */
