@@ -86,6 +86,27 @@
   .chip.new{animation:pop .5s ease-out}
   @keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
   .tip{font-size:12.5px;color:var(--muted);text-align:center;margin:8px 4px 0;line-height:1.35}
+  [hidden]{display:none !important}
+  .sheet{position:fixed;inset:0;z-index:20;background:rgba(20,12,6,.5);display:flex;align-items:flex-end;justify-content:center;
+    -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+  .sheet-card{width:100%;max-width:460px;max-height:86vh;max-height:86dvh;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+    background:var(--card);color:var(--ink);border-radius:24px 24px 0 0;padding:16px 16px max(16px,env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(0,0,0,.25)}
+  @media (min-width:600px){ .sheet{align-items:center;padding:24px} .sheet-card{border-radius:24px} }
+  .sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+  .sheet-head h2{margin:0;font-size:21px}
+  .stats{margin:0 0 12px;color:var(--muted);font-size:14px;line-height:1.4}
+  .name-row{display:flex;gap:8px;margin:0 0 12px}
+  .name-row input{flex:1;min-width:0;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:16px;padding:0 12px}
+  .name-row input:focus{outline:3px solid var(--accent);outline-offset:1px}
+  .name-row button{height:44px;border-radius:12px;border:0;background:var(--accent);color:#2B1D14;font:inherit;font-weight:800;font-size:15px;padding:0 14px;cursor:pointer;touch-action:manipulation}
+  .board-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+  .board-list li{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:8px;padding:9px 12px;border-radius:14px;background:var(--bg);font-size:15px}
+  .board-list li.me{box-shadow:inset 0 0 0 2px var(--accent)}
+  .board-list li.empty{display:block;text-align:center;color:var(--muted);font-size:14px}
+  .board-list .pl{font-weight:800;color:var(--muted);text-align:center}
+  .board-list .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+  .board-list .sc{font-variant-numeric:tabular-nums;font-weight:800}
+  .sheet-note{margin:12px 2px 0;font-size:12.5px;color:var(--muted);line-height:1.4}
   @media (prefers-reduced-motion: reduce){ #hint{animation:none} .chip.new{animation:none} .disco{animation:none} }
 </style>
 </head>
@@ -97,6 +118,9 @@
       <div class="now">Сейчас: <b id="nowMood">😏 Спокойный</b></div>
     </div>
     <div class="btns">
+      <button class="icon-btn" id="boardBtn" type="button" aria-label="Таблица участников" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>
+      </button>
       <button class="icon-btn" id="shareBtn" type="button" aria-label="Поделиться ссылкой">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>
       </button>
@@ -139,6 +163,24 @@
   </section>
 </main>
 
+<div class="sheet" id="board" hidden role="dialog" aria-modal="true" aria-labelledby="boardTitle">
+  <div class="sheet-card">
+    <div class="sheet-head">
+      <h2 id="boardTitle">Таблица участников 🏆</h2>
+      <button class="icon-btn" id="boardClose" type="button" aria-label="Закрыть">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <p class="stats" id="boardStats">Загружаю…</p>
+    <form class="name-row" id="nameForm" autocomplete="off">
+      <input id="nameInput" maxlength="20" placeholder="Твой ник, 2–20 букв" enterkeyhint="done" aria-label="Твой ник">
+      <button type="submit">Сохранить</button>
+    </form>
+    <ol class="board-list" id="boardList"></ol>
+    <p class="sheet-note">В таблице видно только ник и сколько качеств собрано. Больше качеств — выше; при равенстве выше тот, кто успел раньше.</p>
+  </div>
+</div>
+
 <script>
 (() => {
 'use strict';
@@ -164,6 +206,9 @@ const clock = () => performance.now() + clockOff;
 const evTime = e => { const ts = e && e.timeStamp; return (ts && ts < 1e11 ? ts : performance.now()) + clockOff; };
 const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const SHARE_URL = 'https://rust-hack.github.io/hamster/';
+/* Таблица участников и посещения — база Supabase. Ключ публичный (anon / publishable): его и так видно в коде любой страницы.
+   Секретный ключ (service_role / secret) сюда не класть никогда. Пусто — кнопка таблицы спрятана, игра работает как раньше. */
+const DB = { url:'https://kpeulpgrojmcxqizgdhy.supabase.co', key:'sb_publishable_TA0mZa_ikApfY4lGoNsqRQ_muU7s3_l' };
 
 /* ---------- цвета ---------- */
 const C = {
@@ -697,7 +742,7 @@ function markNowChip(){
 }
 resetBtn.addEventListener('click', () => {
   if (!confirm('Начать собирать качества заново?')) return;
-  collected.clear(); store.set(KEY, []); renderChips(); toast('Собираем заново');
+  collected.clear(); store.set(KEY, []); renderChips(); toast('Собираем заново'); submitScore();
 });
 const ICON_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
 const ICON_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>';
@@ -726,6 +771,11 @@ function unlock(m){
   if (m === 'neutral' || collected.has(m)) return;
   collected.add(m); store.set(KEY, [...collected]);
   renderChips(m);
+  submitScore();
+  if (dbOn() && !ME.name && collected.size === 3 && !store.get('hamster.boardHint', false)){
+    store.set('hamster.boardHint', true);
+    setTimeout(() => toast('Попади в таблицу участников: кнопка 🏆 вверху', 3200), 2600);
+  }
   const M = MOODS[m];
   if (collected.size === ORDER.length){
     toast(`Все ${ORDER.length} качеств собраны! Держи корону 👑`, 4200);
@@ -735,6 +785,74 @@ function unlock(m){
     setTimeout(SFX.chime, 250);
   }
 }
+
+/* ---------- таблица участников и посещения ---------- */
+const dbOn = () => !!(DB.url && DB.key);
+function rid(n){ const a = new Uint8Array(n); crypto.getRandomValues(a); return Array.from(a, b => b.toString(16).padStart(2, '0')).join(''); }
+function newUuid(){
+  const h = rid(16).split(''); h[12] = '4'; h[16] = '89ab'[parseInt(h[16], 16) & 3];
+  const x = h.join(''); return `${x.slice(0, 8)}-${x.slice(8, 12)}-${x.slice(12, 16)}-${x.slice(16, 20)}-${x.slice(20)}`;
+}
+const ME = (() => {
+  let v = store.get('hamster.me', null);
+  if (!v || !v.id || !v.secret){ v = { id:newUuid(), secret:rid(24), name:'' }; store.set('hamster.me', v); }
+  return v;
+})();
+function dbCall(fn, body){
+  const h = { apikey:DB.key, 'Content-Type':'application/json' };
+  if (DB.key.startsWith('eyJ')) h.Authorization = 'Bearer ' + DB.key;
+  return fetch(DB.url.replace(/\/+$/, '') + '/rest/v1/rpc/' + fn, { method:'POST', headers:h, body:JSON.stringify(body || {}) })
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+    .then(t => t ? JSON.parse(t) : null);
+}
+let submitTimer = 0;
+function submitScore(now){
+  if (!dbOn() || !ME.name) return Promise.resolve(null);
+  clearTimeout(submitTimer);
+  const go = () => dbCall('hamster_submit', { p_device:ME.id, p_secret:ME.secret, p_name:ME.name, p_qualities:collected.size }).catch(() => null);
+  if (now) return go();
+  return new Promise(res => { submitTimer = setTimeout(() => go().then(res), 1500); });
+}
+const boardEl = $('#board'), boardBtn = $('#boardBtn'), boardList = $('#boardList'), boardStats = $('#boardStats');
+const nameForm = $('#nameForm'), nameInput = $('#nameInput');
+const plural = (n, one, few, many) => { const a = n % 10, b = n % 100; return a === 1 && b !== 11 ? one : a >= 2 && a <= 4 && (b < 10 || b >= 20) ? few : many; };
+function boardRow(cls, cells){
+  const li = document.createElement('li'); if (cls) li.className = cls;
+  cells.forEach(([c, text]) => { const sp = document.createElement('span'); sp.className = c; sp.textContent = text; li.appendChild(sp); });
+  boardList.appendChild(li);
+}
+async function loadBoard(){
+  boardStats.textContent = 'Загружаю…';
+  try {
+    const [rows, st] = await Promise.all([dbCall('hamster_board', { p_device:ME.id }), dbCall('hamster_stats', {})]);
+    if (st) boardStats.textContent = `👀 Заходили ${st.visits} ${plural(st.visits, 'раз', 'раза', 'раз')} · ${st.people} ${plural(st.people, 'человек', 'человека', 'человек')} · сегодня ${st.today}`;
+    boardList.innerHTML = '';
+    if (!rows || !rows.length){
+      const li = document.createElement('li'); li.className = 'empty'; li.textContent = 'Пока никого. Впиши ник и будь первым!'; boardList.appendChild(li);
+    } else rows.forEach(r => boardRow(r.me ? 'me' : '', [['pl', r.place], ['nm', r.name + (r.me ? ' (ты)' : '')], ['sc', (r.crowned ? '👑 ' : '') + r.qualities + '/' + ORDER.length]]));
+  } catch (e) {
+    boardStats.textContent = 'Не получилось загрузить таблицу. Проверь интернет и открой ещё раз.';
+  }
+}
+function openBoard(){
+  boardEl.hidden = false; nameInput.value = ME.name || ''; loadBoard();
+  if (!isTouchFirst && !ME.name) setTimeout(() => nameInput.focus(), 50);
+}
+function closeBoard(){ boardEl.hidden = true; boardBtn.focus(); }
+boardBtn.addEventListener('click', openBoard);
+$('#boardClose').addEventListener('click', closeBoard);
+boardEl.addEventListener('click', e => { if (e.target === boardEl) closeBoard(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !boardEl.hidden) closeBoard(); });
+nameForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  const v = nameInput.value.replace(/\s+/g, ' ').trim().slice(0, 20);
+  if (v.length < 2){ boardStats.textContent = 'Ник — от 2 до 20 букв.'; return; }
+  ME.name = v; store.set('hamster.me', ME); nameInput.value = v; nameInput.blur();
+  const res = await submitScore(true);
+  if (res === null) boardStats.textContent = 'Не получилось сохранить. Проверь интернет.';
+  else loadBoard();
+});
+if (dbOn()){ boardBtn.hidden = false; dbCall('hamster_log_visit', { p_device:ME.id }).catch(() => {}); }
 
 /* ---------- частицы ---------- */
 const parts = [];
