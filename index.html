@@ -129,7 +129,8 @@
   .code-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 6px;font-size:14px;color:var(--muted)}
   .code-row b{font:800 20px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:2px;color:var(--ink)}
   .restore-msg{margin:-4px 2px 0;font-size:13px;color:var(--muted);min-height:1.2em}
-  .install{display:block;margin:4px auto 0}
+  .links{display:flex;justify-content:center;gap:16px;flex-wrap:wrap}
+  .install{display:inline-block;margin:4px 0 0}
   .dice{flex:none;width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--bg);font-size:20px;line-height:1;cursor:pointer;padding:0;touch-action:manipulation}
   .big-btn{display:block;width:100%;height:50px;border-radius:14px;border:0;background:var(--accent);color:#2B1D14;font:inherit;font-weight:800;font-size:17px;cursor:pointer;touch-action:manipulation}
   .wel-hello{display:block;width:64px;height:64px;border-radius:16px;margin:2px 0 10px}
@@ -220,7 +221,10 @@
     <button class="quest" id="quest" type="button"></button>
     <div class="chips" id="chips"></div>
     <p class="tip">«?» — подсказка, 🔒 — секретное качество.</p>
-    <button class="link-btn install" id="installBtn" type="button" hidden>📲 Поставить на экран «Домой»</button>
+    <div class="links">
+      <button class="link-btn install" id="installBtn" type="button" hidden>📲 На экран «Домой»</button>
+      <a class="link-btn install" id="tgLink" href="https://t.me/HamsterRustyBot?startapp" target="_blank" rel="noopener" hidden>✈️ Играть в Telegram</a>
+    </div>
   </section>
 </main>
 
@@ -274,6 +278,7 @@
       <button type="button" data-k="q" class="on" role="tab">Качества</button>
       <button type="button" data-k="w" role="tab">Неделя 🖐</button>
       <button type="button" data-k="c" role="tab">Игра 🎮</button>
+      <button type="button" data-k="chat" role="tab" hidden>Чат 💬</button>
     </div>
     <ol class="board-list" id="boardList"></ol>
     <div class="recover">
@@ -315,6 +320,9 @@ const clock = () => performance.now() + clockOff;
 const evTime = e => { const ts = e && e.timeStamp; return (ts && ts < 1e11 ? ts : performance.now()) + clockOff; };
 const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const SHARE_URL = 'https://rust-hack.github.io/hamster/';
+/* Ссылка на Хамстера в Telegram (t.me/<бот>/<приложение>). Пусто — делимся ссылкой на сайт. */
+const TG_APP_LINK = 'https://t.me/HamsterRustyBot?startapp';
+const IN_TG = /tgWebAppData=/.test(location.hash + location.search);
 /* Таблица участников и посещения — база Supabase. Ключ публичный (anon / publishable): его и так видно в коде любой страницы.
    Секретный ключ (service_role / secret) сюда не класть никогда. Пусто — кнопка таблицы спрятана, игра работает как раньше. */
 const DB = { url:'https://kpeulpgrojmcxqizgdhy.supabase.co', key:'sb_publishable_TA0mZa_ikApfY4lGoNsqRQ_muU7s3_l' };
@@ -977,8 +985,9 @@ soundBtn.addEventListener('click', () => {
   if (A.on) SFX.squeak(1, 1);
 });
 shareBtn.addEventListener('click', async () => {
+  if (TG.on && TG.app.openTelegramLink){ tgShare(); return; }
   /* Ссылка — внутри текста, без отдельного url: иначе Telegram и другие приложения на iPhone берут только текст. */
-  const data = { title:'Хамстер', text:'Погладь Хамстера и собери все его качества 🐹\n' + SHARE_URL };
+  const data = { title:'Хамстер', text:'Погладь Хамстера и собери все его качества 🐹\n' + SHARE_URL + (TG_APP_LINK ? '\nВ Telegram: ' + TG_APP_LINK : '') };
   if (navigator.share){
     try { await navigator.share(data); return; } catch (e) { if (e && e.name === 'AbortError') return; }
   }
@@ -989,7 +998,7 @@ shareBtn.addEventListener('click', async () => {
 function unlock(m){
   if (m === 'neutral' || collected.has(m)) return;
   collected.add(m); store.set(KEY, [...collected]);
-  renderChips(m);
+  renderChips(m); buzz('ok');
   saveProgress();
   const n = mainCount();
   if (dbOn() && n === 6 && !store.get('hamster.codeHint', false)){
@@ -1085,14 +1094,15 @@ async function loadBoard(){
   boardStats.textContent = 'Загружаю…';
   const kind = boardKind;
   try {
-    const [rows, st] = await Promise.all([dbCall('hamster_board', { p_device:ME.id, p_kind:kind }), dbCall('hamster_stats', {})]);
+    const args = kind === 'chat' ? { p_device:ME.id, p_kind:'q', p_chat:TG.chat } : { p_device:ME.id, p_kind:kind };
+    const [rows, st] = await Promise.all([dbCall('hamster_board', args), dbCall('hamster_stats', {})]);
     if (kind !== boardKind) return;
     if (st) boardStats.textContent = `👀 Заходили ${st.visits} ${plural(st.visits, 'раз', 'раза', 'раз')} · ${st.people} ${plural(st.people, 'человек', 'человека', 'человек')} · сегодня ${st.today}`;
     boardList.innerHTML = '';
     S.boardOthers = Math.max(S.boardOthers || 0, (rows || []).filter(r => !r.me).length);
     if (!rows || !rows.length){
       const li = document.createElement('li'); li.className = 'empty';
-      li.textContent = kind === 'w' ? 'На этой неделе ещё никто не гладил. Будь первым!' : kind === 'c' ? 'В мини-игру ещё никто не играл. Жми 🎮 внизу слева!' : 'Пока никого. Впиши ник и будь первым!';
+      li.textContent = kind === 'chat' ? 'Из этого чата пока никого. Позови друзей: кнопка ⬆️ вверху.' : kind === 'w' ? 'На этой неделе ещё никто не гладил. Будь первым!' : kind === 'c' ? 'В мини-игру ещё никто не играл. Жми 🎮 внизу слева!' : 'Пока никого. Впиши ник и будь первым!';
       boardList.appendChild(li);
     } else rows.forEach(r => {
       const sc = kind === 'w' ? `🖐 ${r.pets || 0}` : kind === 'c' ? `🌻 ${r.best_catch || 0}`
@@ -1129,7 +1139,7 @@ nameForm.addEventListener('submit', async e => {
   if (badName(v)){ boardStats.textContent = 'Этот ник не подойдёт, придумай другой 🙂'; return; }
   const prev = ME.name;
   ME.name = v; store.set('hamster.me', ME); nameInput.value = v; nameInput.blur();
-  const res = await saveProgress(true);
+  const res = await saveProgress(true); tgSaveCloud();
   if (res === null) boardStats.textContent = 'Не получилось сохранить. Проверь интернет.';
   else if (res === 'bad_word' || res === 'bad_name'){
     ME.name = prev; store.set('hamster.me', ME); nameInput.value = prev || '';
@@ -1154,7 +1164,7 @@ restoreForm.addEventListener('submit', async e => {
     if (r && r.status === 'ok'){
       fromMask(r.mask || 0); store.set(KEY, [...collected]);
       if (r.name) ME.name = r.name;
-      ME.code = code; store.set('hamster.me', ME);
+      ME.code = code; store.set('hamster.me', ME); tgSaveCloud();
       if (r.pets > PST.total){ PST.total = r.pets; store.set('hamster.pets', PST); renderPets(); }
       if (r.catch > GAME.best){ GAME.best = r.catch; store.set('hamster.best', GAME.best); }
       if (r.streak > ST.best){ ST.best = r.streak; store.set('hamster.streak', ST); }
@@ -1183,7 +1193,7 @@ $('#nameDice').addEventListener('click', () => { nameInput.value = randomNick();
 
 /* знакомство: при первом заходе спросить ник (с готовым вариантом) */
 const welEl = $('#welcome'), welForm = $('#welForm'), welInput = $('#welInput'), welMsg = $('#welMsg');
-function openWelcome(){ welInput.value = randomNick(); welMsg.textContent = ''; welEl.hidden = false; }
+function openWelcome(){ if (ME.name) return; welInput.value = tgName() || randomNick(); welMsg.textContent = ''; welEl.hidden = false; }
 function closeWelcome(){ welEl.hidden = true; store.set('hamster.welcomed', true); }
 $('#welDice').addEventListener('click', () => { welInput.value = randomNick(); welMsg.textContent = ''; });
 $('#welSkip').addEventListener('click', () => { closeWelcome(); toast('Ок! Попасть в таблицу можно потом: кнопка 🏆 вверху', 3200); });
@@ -1201,14 +1211,14 @@ welForm.addEventListener('submit', async e => {
     ME.name = ''; store.set('hamster.me', ME);
     welMsg.textContent = 'Этот ник не подойдёт, придумай другой 🙂'; return;
   }
-  closeWelcome(); audioInit(); SFX.squeak(1.1, 2);
+  closeWelcome(); audioInit(); SFX.squeak(1.1, 2); tgSaveCloud();
   toast(`Ты в таблице как «${v}». Сменить ник можно в 🏆`, 3400);
 });
 
 if (dbOn()){
   boardBtn.hidden = false; renderCode();
-  dbCall('hamster_log_visit', { p_device:ME.id }).catch(() => {});
-  saveProgress(true);
+  /* В Telegram сначала сверяемся с облаком (тот же хомяк на всех устройствах), потом пишем в базу. */
+  if (!IN_TG) startSession(); else setTimeout(startSession, 4000);
   if (!ME.name && !store.get('hamster.welcomed', false)) setTimeout(openWelcome, 400);
 }
 
@@ -1446,6 +1456,7 @@ document.addEventListener('visibilitychange', () => {
 
 function onTap(z, now){
   S.lastAct = now;
+  buzz('light');
   if (S.gum.on && !S.gum.deflate){
     const g = gumCenter();
     if (Math.hypot(P.downX - g.x, P.downY - g.y) < g.r + 10 && g.r > 8){ popGum(true, now); return; }
@@ -1547,6 +1558,7 @@ function updateGum(dt, now){
 
 /* ---------- поднять и отпустить ---------- */
 function startCarry(now){
+  buzz('medium');
   S.carry = { gx:P.x, gy:P.y, dx:sp(), dy:sp(), th:0, om:0, lastVx:0, fall:false, vy:0, minDy:0 };
   setTrans('carry', 1e9, now);
   SP.hand.v -= 6;
@@ -1920,6 +1932,7 @@ function renderPets(){ petsEl.textContent = `🖐 ${PST.total}`; }
 let petSaveT = 0;
 function addPet(){
   PST.total++; PST.unsent++; DAY.pets++;
+  if (PST.total % 2 === 0) buzz('sel');
   renderPets();
   const now = clock();
   if (now - petSaveT > 2000){ petSaveT = now; store.set('hamster.pets', PST); saveDay(); }
@@ -2105,13 +2118,13 @@ function spawnItem(t){
 }
 function catchItem(it, now){
   if (it.kind === 'chili'){
-    GAME.score = Math.max(0, GAME.score - 2);
+    GAME.score = Math.max(0, GAME.score - 2); buzz('heavy');
     say('Ай, остро! 🌶'); F.cur.tint = .35; SFX.growl(); SP.bounce.v -= 160;
     spawn('steam', GAME.hx - 110, 70, { r:8, vx:-30, vy:-80, life:.8, grow:1.4 }); spawn('steam', GAME.hx + 110, 70, { r:8, vx:30, vy:-80, life:.8, grow:1.4 });
     spawn('text', it.x, 210, { text:'−2', color:'#E2452F', size:28, vy:-70, life:.8, stroke:'#FFF9F0' });
   } else {
     const add = it.kind === 'gold' ? 3 : 1;
-    GAME.score += add; S.chewUntil = now + 500; SFX.crunch(); if (add > 1) SFX.chime();
+    GAME.score += add; S.chewUntil = now + 500; buzz('light'); SFX.crunch(); if (add > 1) SFX.chime();
     SP.chL.v += 1.2; SP.chR.v += 1.2;
     spawn('text', it.x, 210, { text:'+' + add, color:add > 1 ? '#D9A520' : C.green, size:add > 1 ? 32 : 24, vy:-70, life:.8, stroke:'#FFF9F0' });
     if (add > 1) spawn('spark', it.x, 230, { vy:-40, life:.7, vr:160 });
@@ -2167,6 +2180,103 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight'){ GAME.target = clamp(GAME.target + 45, 70, 330); e.preventDefault(); }
 });
 
+/* ---------- Telegram: Хамстер внутри Telegram (Mini App) ---------- */
+const TG = { on:false, app:null, user:null, chat:null };
+function buzz(kind){
+  if (TG.on){
+    const h = TG.app.HapticFeedback; if (!h) return;
+    try { if (kind === 'ok') h.notificationOccurred('success'); else if (kind === 'sel') h.selectionChanged(); else h.impactOccurred(kind || 'light'); } catch (_) {}
+  } else if (navigator.vibrate && kind !== 'sel'){
+    try { navigator.vibrate(kind === 'ok' ? [18, 40, 18] : kind === 'heavy' ? 30 : 10); } catch (_) {}
+  }
+}
+function tgName(){
+  if (!TG.user) return '';
+  const u = TG.user;
+  let n = cleanNick([u.first_name, u.last_name ? u.last_name[0] + '.' : ''].filter(Boolean).join(' '));
+  if (n.length < 2) n = cleanNick(u.username || '');
+  return n.length >= 2 && !badName(n) ? n : '';
+}
+function tgSaveCloud(){
+  const cs = TG.on && TG.app.CloudStorage; if (!cs) return;
+  try { cs.setItem('hamster_me', JSON.stringify({ id:ME.id, secret:ME.secret, code:ME.code, name:ME.name || '' }), () => {}); } catch (_) {}
+}
+let tgJoined = false;
+function startSession(){
+  if (S.sessionStarted || !dbOn()) return;
+  S.sessionStarted = true;
+  dbCall('hamster_log_visit', { p_device:ME.id }).catch(() => {});
+  saveProgress(true).then(() => tgJoinChat());
+}
+function tgJoinChat(){
+  if (!TG.chat || !dbOn() || tgJoined) return;
+  dbCall('hamster_chat_join', { p_device:ME.id, p_secret:ME.secret, p_chat:TG.chat })
+    .then(r => { if (r === 'ok') tgJoined = true; else if (r === 'no_player') setTimeout(tgJoinChat, 4000); }).catch(() => {});
+}
+/* Прогресс привязан к аккаунту Telegram: тот же хомяк в Telegram на телефоне и на компьютере. */
+function tgSyncIdentity(){
+  const cs = TG.app.CloudStorage;
+  if (!cs || (TG.app.isVersionAtLeast && !TG.app.isVersionAtLeast('6.9'))){ startSession(); return; }
+  try {
+    cs.getItem('hamster_me', (err, val) => {
+      if (err) return;
+      let cloud = null; try { cloud = val ? JSON.parse(val) : null; } catch (_) {}
+      if (cloud && cloud.id && cloud.secret && cloud.code && cloud.id !== ME.id && dbOn()){
+        Object.assign(ME, { id:cloud.id, secret:cloud.secret, code:cloud.code, name:cloud.name || ME.name });
+        store.set('hamster.me', ME); renderCode(); tgJoined = false;
+        dbCall('hamster_restore', { p_code:ME.code, p_device:ME.id, p_secret:ME.secret }).then(r => {
+          if (!r || r.status !== 'ok') return;
+          fromMask(r.mask || 0); store.set(KEY, [...collected]);
+          if (r.name) ME.name = r.name; store.set('hamster.me', ME);
+          if (r.pets > PST.total){ PST.total = r.pets; store.set('hamster.pets', PST); renderPets(); }
+          if (r.catch > GAME.best){ GAME.best = r.catch; store.set('hamster.best', GAME.best); }
+          if (r.streak > ST.best){ ST.best = r.streak; store.set('hamster.streak', ST); }
+          renderChips(); checkNewItems(false);
+          if (ME.name && !welEl.hidden) closeWelcome();
+          toast('Твой Хамстер из Telegram на месте ✈️', 2600);
+          tgJoinChat();
+        }).catch(() => {}).finally(() => startSession());
+      } else { if (!cloud || cloud.id !== ME.id) tgSaveCloud(); startSession(); }
+    });
+  } catch (_) { startSession(); }
+}
+function tgShare(){
+  const M = MOODS[S.mood], link = TG_APP_LINK || SHARE_URL;
+  const text = S.mood === 'neutral' ? 'Погладь Хамстера и собери все его качества 🐹' : `Хамстер сейчас ${M.e} ${M.name}! Погладь его и собери все качества 🐹`;
+  TG.app.openTelegramLink('https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(text));
+}
+function tgInit(app){
+  if (!app || TG.on) return;
+  TG.on = true; TG.app = app;
+  const u = app.initDataUnsafe || {};
+  TG.user = u.user || null;
+  TG.chat = u.chat_instance ? String(u.chat_instance).slice(0, 64) : null;
+  try { app.ready(); } catch (_) {}
+  try { app.expand(); } catch (_) {}
+  try { if (app.disableVerticalSwipes) app.disableVerticalSwipes(); } catch (_) {}
+  try {
+    const dark = app.colorScheme === 'dark', bg = dark ? '#161311' : '#F4EDE4';
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    if (app.setHeaderColor) app.setHeaderColor(bg);
+    if (app.setBackgroundColor) app.setBackgroundColor(bg);
+  } catch (_) {}
+  installBtn.hidden = true;
+  if (TG.chat){ const b = document.querySelector('#boardTabs [data-k="chat"]'); if (b) b.hidden = false; }
+  if (!welEl.hidden && !ME.name){ const n = tgName(); if (n) welInput.value = n; }
+  tgSyncIdentity();
+}
+if (!IN_TG && TG_APP_LINK && !TEST) $('#tgLink').hidden = false;
+if (/tgWebAppData=/.test(location.hash + location.search)){
+  if (window.Telegram && window.Telegram.WebApp) tgInit(window.Telegram.WebApp);
+  else {
+    const sc = document.createElement('script');
+    sc.src = 'https://telegram.org/js/telegram-web-app.js';
+    sc.onload = () => tgInit(window.Telegram && window.Telegram.WebApp);
+    sc.onerror = () => startSession();
+    document.head.appendChild(sc);
+  }
+}
+
 /* ---------- старт ---------- */
 faceTargets('neutral');
 for (const k in F.tgt) F.cur[k] = F.tgt[k];
@@ -2191,7 +2301,7 @@ window.hamster = {
   game:{ start:() => startGame(), state:() => ({ on:GAME.on, phase:GAME.phase, score:GAME.score, best:GAME.best, items:GAME.items.map(i => [i.x, i.y, i.kind]) }) },
   wear:{ set:id => wearToggle(id), bg:id => setBg(id), state:() => Object.assign({}, W) },
   pets:() => PST.total, quest:() => ({ list:questsFor(DAY.date).map(q => q.k), day:DAY, streak:streakNow() }),
-  closeBoard:() => closeBoard(), setOthers:n => { S.boardOthers = n; S.boardOpenAt = clock() - 2000; }
+  closeBoard:() => closeBoard(), tgInit:app => tgInit(app), tgName:() => tgName(), tg:() => ({ on:TG.on, chat:TG.chat, user:TG.user && TG.user.first_name }), setOthers:n => { S.boardOthers = n; S.boardOpenAt = clock() - 2000; }
 };
 })();
 </script>
