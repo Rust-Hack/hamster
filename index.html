@@ -90,7 +90,7 @@
   #seedBtn svg{width:32px;height:32px;pointer-events:none}
 
   .coll{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:10px 12px 12px}
-  .coll-head{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);margin:0 2px 8px}
+  .coll-head{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);margin:0 2px 8px;white-space:nowrap}
   .coll-head b{color:var(--ink);font-size:15px}
   .coll-head .sp{flex:1}
   .link-btn{border:0;background:none;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;padding:4px;touch-action:manipulation}
@@ -133,6 +133,35 @@
   .dice{flex:none;width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--bg);font-size:20px;line-height:1;cursor:pointer;padding:0;touch-action:manipulation}
   .big-btn{display:block;width:100%;height:50px;border-radius:14px;border:0;background:var(--accent);color:#2B1D14;font:inherit;font-weight:800;font-size:17px;cursor:pointer;touch-action:manipulation}
   .wel-hello{display:block;width:64px;height:64px;border-radius:16px;margin:2px 0 10px}
+  .disco{z-index:2;mix-blend-mode:screen}
+  .stage-btn{position:absolute;left:12px;width:50px;height:50px;border-radius:50%;border:2px solid #2B1D14;background:#FFF3DC;font-size:24px;line-height:1;
+    display:grid;place-items:center;z-index:3;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;padding:0;box-shadow:0 3px 0 #2B1D14;
+    transition:transform .08s,box-shadow .08s}
+  .stage-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #2B1D14}
+  #wardBtn{bottom:12px} #gameBtn{bottom:72px}
+  .stage.gaming .stage-btn,.stage.gaming #seedBtn,.stage.gaming #hint{display:none}
+  #gameHud{position:absolute;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:18px;background:rgba(255,253,249,.95);color:#2B1D14;
+    border:2px solid #2B1D14;border-radius:999px;padding:6px 18px;font-weight:800;font-size:18px;z-index:4;white-space:nowrap;pointer-events:none}
+  #gameBig{position:absolute;inset:0;display:grid;place-items:center;font-size:76px;font-weight:900;color:#2B1D14;pointer-events:none;z-index:4;
+    text-shadow:0 3px 0 #FFF9F0,0 -2px 0 #FFF9F0,3px 0 0 #FFF9F0,-3px 0 0 #FFF9F0}
+  .pets{font-size:13px;color:var(--muted)}
+  .quest{display:flex;align-items:center;gap:8px;width:100%;border:0;background:var(--bg);color:var(--ink);border-radius:12px;padding:7px 10px;margin:0 0 8px;
+    font:inherit;font-size:13.5px;text-align:left;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  .quest .q{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .quest .st{flex:none;font-weight:800}
+  .quest.done{box-shadow:inset 0 0 0 2px #2E9E5E}
+  .tabs{display:flex;gap:6px;margin:0 0 10px}
+  .tabs button{flex:1;min-width:0;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-weight:700;font-size:14px;cursor:pointer;padding:0 4px;touch-action:manipulation}
+  .tabs button.on{background:var(--accent);color:#2B1D14;border-color:transparent}
+  .ward-h{margin:14px 2px 8px;font-size:16px}
+  .ward-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .wcard{display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:14px;padding:10px 4px 8px;
+    font:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-width:0}
+  .wcard .we{font-size:28px;line-height:1.1}
+  .wcard .wn{font-weight:700;font-size:13.5px}
+  .wcard .ws{font-size:11.5px;color:var(--muted);text-align:center;line-height:1.2}
+  .wcard.on{box-shadow:inset 0 0 0 2px var(--accent)}
+  .wcard.locked{opacity:.55}
   @media (prefers-reduced-motion: reduce){ #hint{animation:none} .chip.new{animation:none} .disco{animation:none} }
 </style>
 </head>
@@ -171,6 +200,10 @@
     <div id="bubble" role="status" aria-live="polite"></div>
     <div id="hint">Погладь Хамстера</div>
     <div id="toast" role="status" aria-live="polite"></div>
+    <button id="wardBtn" class="stage-btn" type="button" aria-label="Гардероб">👕</button>
+    <button id="gameBtn" class="stage-btn" type="button" aria-label="Мини-игра «Лови семечки»">🎮</button>
+    <div id="gameHud" hidden><span>🌻 <b id="gScore">0</b></span><span>⏱ <b id="gTime">20</b></span></div>
+    <div id="gameBig" hidden></div>
     <button id="seedBtn" type="button" aria-label="Дать семечку">
       <svg viewBox="0 0 30 30" aria-hidden="true"><g transform="rotate(32 15 15)">
         <path d="M15 3 C22 8 22 22 15 27 C8 22 8 8 15 3 Z" fill="#2E2E33" stroke="#2B1D14" stroke-width="2"/>
@@ -181,14 +214,30 @@
 
   <section class="coll" aria-label="Качества Хамстера">
     <div class="coll-head">
-      <span>Качества</span><b id="count">0 / 19</b><span class="sp"></span>
-      <button class="link-btn" id="resetBtn" type="button" hidden>собрать заново</button>
+      <span>Качества</span><b id="count">0 / 19</b><span class="pets" id="petsNow" title="Сколько раз погладил">🖐 0</span><span class="sp"></span>
+      <button class="link-btn" id="resetBtn" type="button" hidden aria-label="Собрать качества заново">заново</button>
     </div>
+    <button class="quest" id="quest" type="button"></button>
     <div class="chips" id="chips"></div>
-    <p class="tip">Гладь, тыкай, корми, крути, поднимай. Нажми на «?», будет подсказка.</p>
+    <p class="tip">«?» — подсказка, 🔒 — секретное качество.</p>
     <button class="link-btn install" id="installBtn" type="button" hidden>📲 Поставить на экран «Домой»</button>
   </section>
 </main>
+
+<div class="sheet" id="ward" hidden role="dialog" aria-modal="true" aria-labelledby="wardTitle">
+  <div class="sheet-card">
+    <div class="sheet-head">
+      <h2 id="wardTitle">Гардероб 👕</h2>
+      <button class="icon-btn" id="wardClose" type="button" aria-label="Закрыть">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <p class="stats">Вещи открываются за качества и серию дней. Нажми, чтобы надеть или снять.</p>
+    <div class="ward-grid" id="wardItems"></div>
+    <h3 class="ward-h">Фон</h3>
+    <div class="ward-grid" id="wardBgs"></div>
+  </div>
+</div>
 
 <div class="sheet" id="welcome" hidden role="dialog" aria-modal="true" aria-labelledby="welTitle">
   <div class="sheet-card">
@@ -221,6 +270,11 @@
       <button type="button" class="dice" id="nameDice" aria-label="Придумать ник">🎲</button>
       <button type="submit">Сохранить</button>
     </form>
+    <div class="tabs" id="boardTabs" role="tablist" aria-label="Чем меряемся">
+      <button type="button" data-k="q" class="on" role="tab">Качества</button>
+      <button type="button" data-k="w" role="tab">Неделя 🖐</button>
+      <button type="button" data-k="c" role="tab">Игра 🎮</button>
+    </div>
     <ol class="board-list" id="boardList"></ol>
     <div class="recover">
       <h3>Код восстановления</h3>
@@ -232,7 +286,7 @@
       </form>
       <p class="restore-msg" id="restoreMsg" role="status"></p>
     </div>
-    <p class="sheet-note">В таблице видно только ник и сколько качеств собрано. Больше качеств — выше; при равенстве выше тот, кто успел раньше.</p>
+    <p class="sheet-note">Видно только ник и цифры. «Качества» — кто больше собрал (при равенстве — кто раньше), «Неделя» — поглаживания с понедельника, «Игра» — рекорд в «Лови семечки».</p>
   </div>
 </div>
 
@@ -294,6 +348,7 @@ svg.innerHTML = `
   </radialGradient>
   <radialGradient id="pressG"><stop offset="0" stop-color="#1A0F08" stop-opacity=".4"/><stop offset="1" stop-color="#1A0F08" stop-opacity="0"/></radialGradient>
   <linearGradient id="lensG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#454A57"/><stop offset=".5" stop-color="#121216"/><stop offset="1" stop-color="#262A32"/></linearGradient>
+  <linearGradient id="nightG" x1="0" y1="-300" x2="0" y2="440" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#0A1028"/><stop offset="1" stop-color="#2B3A6E"/></linearGradient>
   <clipPath id="clipEyeL"><ellipse cx="0" cy="0" rx="17" ry="16"/></clipPath>
   <clipPath id="clipEyeR"><ellipse cx="0" cy="0" rx="17" ry="16"/></clipPath>
   <clipPath id="clipScreen"><rect x="154" y="355" width="22" height="38" rx="3"/></clipPath>
@@ -305,6 +360,49 @@ svg.innerHTML = `
     <path d="M110 539 H196" stroke="${C.green}" stroke-width="2.5" stroke-linecap="round" opacity=".85"/>
   </g>
 </defs>
+<g id="bgScene">
+  <g id="bgStore" style="display:none">
+    <rect x="-600" y="-800" width="1600" height="1240" fill="#F2F1ED"/>
+    <path d="M110 -30 V440 M290 -30 V440" stroke="#E2E1DC" stroke-width="3"/>
+    <rect x="-600" y="-800" width="1600" height="770" fill="#1B1B1E"/>
+    <path d="M-600 -62 H1000 M-600 -44 H1000" stroke="#2E2E34" stroke-width="4"/>
+    <g id="storeLights"></g>
+    <path d="M64 -30 V12" stroke="#2B1D14" stroke-width="2"/>
+    <g transform="translate(64 26) rotate(-6)"><rect x="-58" y="-14" width="116" height="28" rx="4" fill="#FFFFFF" stroke="#2B1D14" stroke-width="2.5"/>
+      <text x="0" y="5" font-size="12.5" font-weight="800" text-anchor="middle" fill="#2B1D14" font-family="-apple-system,system-ui,sans-serif" letter-spacing=".5">ПРИМЕРОЧНАЯ ↑</text></g>
+    <rect x="-600" y="440" width="1600" height="520" fill="#E6E5E0"/>
+    <path d="M-600 440 H1000" stroke="#CDCCC6" stroke-width="3"/>
+    <g id="storeTiles" stroke="#D2D1CB" stroke-width="2" fill="none"></g>
+    <g stroke="#2A2A2E" stroke-width="5" stroke-linecap="round" fill="none"><path d="M24 210 V440 M-120 210 H60"/><path d="M378 210 V440 M340 210 H520"/></g>
+    <g stroke="#2B1D14" stroke-width="2.5" stroke-linejoin="round">
+      <path d="M-14 216 l12 -6 l12 6 M-4 220 h28 v116 q-14 8 -28 0 z" fill="#2C3E66"/>
+      <path d="M28 216 l10 -6 l10 6 M22 220 h34 v104 q-17 8 -34 0 z" fill="#8B5E3C"/>
+      <path d="M346 216 l10 -6 l10 6 M340 220 h32 v112 q-16 8 -32 0 z" fill="#1F2A44"/>
+      <path d="M384 216 l10 -6 l10 6 M378 220 h34 v98 q-17 8 -34 0 z" fill="#D9CDB8"/>
+    </g>
+  </g>
+  <g id="bgRoom" style="display:none">
+    <rect x="-600" y="-800" width="1600" height="1240" fill="#EAD9C6"/>
+    <g transform="translate(16 26)"><rect width="98" height="150" rx="6" fill="#BFE3FF" stroke="#7A5A3C" stroke-width="6"/><circle cx="70" cy="36" r="13" fill="#FFF3C4"/>
+      <path d="M8 120 q20 -18 40 0 q20 -16 42 0 v24 h-82 z" fill="#9ED39B"/><path d="M49 0 V150 M0 75 H98" stroke="#7A5A3C" stroke-width="5"/></g>
+    <g transform="translate(298 18) rotate(3)"><rect width="88" height="124" fill="#2B1D14"/><rect x="6" y="6" width="76" height="112" fill="#F7C948"/>
+      <circle cx="44" cy="52" r="24" fill="#E58A3A"/><circle cx="36" cy="46" r="4" fill="#2B1D14"/><circle cx="52" cy="46" r="4" fill="#2B1D14"/>
+      <text x="44" y="104" font-size="13" font-weight="900" text-anchor="middle" fill="#2B1D14" font-family="-apple-system,system-ui,sans-serif">ХАМСТЕР</text></g>
+    <rect x="-600" y="440" width="1600" height="520" fill="#C9996A"/>
+    <path d="M-600 440 H1000" stroke="#A97C52" stroke-width="4"/>
+    <path d="M-600 472 H1000 M-600 506 H1000 M-600 546 H1000 M-600 594 H1000 M40 440 V472 M250 472 V506 M120 506 V546 M330 546 V594 M60 546 V594" stroke="#B4845A" stroke-width="2.5"/>
+    <ellipse cx="200" cy="546" rx="190" ry="32" fill="#B5473A"/>
+    <ellipse cx="200" cy="546" rx="160" ry="22" fill="none" stroke="#F2C14E" stroke-width="4"/>
+  </g>
+  <g id="bgNight" style="display:none">
+    <rect x="-600" y="-800" width="1600" height="1240" fill="url(#nightG)"/>
+    <g id="nightStars" fill="#FFF6D8"></g>
+    <g transform="translate(332 8)"><circle r="28" fill="#FFF1B8"/><circle cx="12" cy="-9" r="24" fill="#111A3C"/></g>
+    <rect x="-600" y="440" width="1600" height="520" fill="#141A36"/>
+    <path d="M-600 440 H1000" stroke="#2D3A6A" stroke-width="3"/>
+    <ellipse cx="200" cy="548" rx="170" ry="24" fill="#3A4C8E" opacity=".55"/>
+  </g>
+</g>
 <ellipse id="shadow" cx="200" cy="549" rx="134" ry="11" fill="rgba(40,25,10,.16)"/>
 <g id="hamG">
   <g id="shoeL"><use href="#shoeArt"/></g>
@@ -338,6 +436,7 @@ svg.innerHTML = `
     <path d="M282 320 C282 300 272 286 254 278 L242 316 L202 356 L206 364 C234 352 262 342 278 334 Z" fill="#1E1E22" stroke="${C.line}" stroke-width="4" stroke-linejoin="round"/>
     <circle cx="146" cy="294" r="3.6" fill="${C.silver}" stroke="#55585E" stroke-width="1.2"/>
     <circle cx="254" cy="294" r="3.6" fill="${C.silver}" stroke="#55585E" stroke-width="1.2"/>
+    <g id="wChain" style="display:none"></g>
     <path d="M284 334 Q326 366 314 406 L290 430" stroke="${C.line}" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     <path d="M284 334 Q326 366 314 406 L290 430" stroke="#26262B" stroke-width="38" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     <path d="M298 350 Q316 364 320 384" stroke="${C.jacketHi}" stroke-width="6" stroke-linecap="round" fill="none" opacity=".45"/>
@@ -431,6 +530,29 @@ svg.innerHTML = `
       <path d="M140 76 Q200 58 256 74" stroke="${C.hairHi}" stroke-width="6" fill="none" stroke-linecap="round"/>
       <g id="locks"></g>
     </g>
+    <g id="wCap" style="display:none">
+      <path d="M96 120 C92 66 140 34 200 34 C260 34 308 66 304 120 Z" fill="#1E1E22" stroke="${C.line}" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M200 37 V118 M148 46 Q138 82 140 118 M252 46 Q262 82 260 118" stroke="#3A3A41" stroke-width="3" fill="none"/>
+      <circle cx="200" cy="36" r="6" fill="#2A2A2E" stroke="${C.line}" stroke-width="3"/>
+      <circle cx="200" cy="84" r="13" fill="${C.green}" stroke="${C.line}" stroke-width="2.5"/>
+      <path d="${SEED}" transform="translate(200 84) scale(.75)" fill="#FFFFFF"/>
+      <path d="M84 120 Q200 98 316 120 Q320 136 302 140 Q200 122 98 140 Q80 136 84 120 Z" fill="#141416" stroke="${C.line}" stroke-width="4" stroke-linejoin="round"/>
+    </g>
+    <g id="wBeanie" style="display:none">
+      <circle cx="200" cy="28" r="17" fill="#F2C14E" stroke="${C.line}" stroke-width="3.5"/>
+      <path d="M94 124 C88 62 140 38 200 38 C260 38 312 62 306 124 Z" fill="#E0A82E" stroke="${C.line}" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M130 52 Q124 90 126 120 M165 42 Q160 84 162 118 M200 40 V118 M235 42 Q240 84 238 118 M270 52 Q276 90 274 120" stroke="#C48F14" stroke-width="3" fill="none"/>
+      <path d="M88 108 Q200 90 312 108 L314 136 Q200 118 86 136 Z" fill="#C48F14" stroke="${C.line}" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M104 110 V132 M124 106 V128 M144 103 V125 M164 101 V123 M184 100 V122 M204 100 V122 M224 100 V122 M244 101 V123 M264 103 V125 M284 106 V128 M300 109 V131" stroke="#A97A10" stroke-width="2.5"/>
+    </g>
+    <g id="wPhones" style="display:none">
+      <path d="M80 176 C62 -10 338 -10 320 176" fill="none" stroke="${C.line}" stroke-width="15" stroke-linecap="round"/>
+      <path d="M80 176 C62 -10 338 -10 320 176" fill="none" stroke="#2E2E34" stroke-width="9" stroke-linecap="round"/>
+      <ellipse cx="80" cy="186" rx="20" ry="32" fill="#1E1E22" stroke="${C.line}" stroke-width="4"/>
+      <ellipse cx="320" cy="186" rx="20" ry="32" fill="#1E1E22" stroke="${C.line}" stroke-width="4"/>
+      <ellipse cx="80" cy="186" rx="9" ry="18" fill="${C.green}"/>
+      <ellipse cx="320" cy="186" rx="9" ry="18" fill="${C.green}"/>
+    </g>
     <g id="crown" style="display:none" transform="rotate(-7 200 52)">
       <path d="M160 54 L163 22 L182 40 L200 12 L218 40 L237 22 L240 54 Z" fill="${C.gold}" stroke="${C.line}" stroke-width="3.5" stroke-linejoin="round"/>
       <path d="M163 46 H237" stroke="#D9A520" stroke-width="3"/>
@@ -463,6 +585,32 @@ const shoeL = G('shoeL'), shoeR = G('shoeR'), shadesEl = G('shades'), crownEl = 
 const gumG = G('gum'), gumBall = G('gumBall'), gumShine = G('gumShine'), splatEl = G('splat');
 const pressEl = G('press'), starsG = G('stars'), starEls = [...starsG.children];
 const fx = G('fx'), locksG = G('locks');
+const WEAR_EL = { cap:G('wCap'), beanie:G('wBeanie'), headphones:G('wPhones'), crown:crownEl, chain:G('wChain') };
+const BG_EL = { store:G('bgStore'), room:G('bgRoom'), night:G('bgNight') };
+(() => {
+  const ch = G('wChain');
+  for (let i = 0; i <= 14; i++){
+    const t = i / 14, x = (1 - t) * (1 - t) * 154 + 2 * t * (1 - t) * 200 + t * t * 246, y = (1 - t) * (1 - t) * 300 + 2 * t * (1 - t) * 390 + t * t * 300;
+    el('circle', { cx:x.toFixed(1), cy:y.toFixed(1), r:4.6, fill:C.gold, stroke:'#8A6A10', 'stroke-width':1.6 }, ch);
+  }
+  el('circle', { cx:200, cy:362, r:11, fill:C.gold, stroke:C.line, 'stroke-width':2.5 }, ch);
+  el('ellipse', { cx:200, cy:365, rx:4, ry:3.2, fill:'#8A6A10' }, ch);
+  [[194, 358], [200, 356], [206, 358]].forEach(([x, y]) => el('circle', { cx:x, cy:y, r:1.8, fill:'#8A6A10' }, ch));
+  const L = G('storeLights');
+  for (let x = -40; x <= 440; x += 60){
+    const g = el('g', { transform:`translate(${x} -30)` }, L);
+    el('rect', { x:-7, y:-14, width:14, height:18, rx:4, fill:'#2A2A30' }, g);
+    el('circle', { cy:6, r:12, fill:'#FFFFFF', opacity:.16 }, g);
+    el('circle', { cy:6, r:5.5, fill:'#FFFFFF' }, g);
+  }
+  const T = G('storeTiles'); let d = '';
+  [468, 502, 546, 604, 680].forEach(y => { d += `M-600 ${y} H1000 `; });
+  for (let x = -600; x <= 1000; x += 100) d += `M${(200 + (x - 200) * .4).toFixed(0)} 440 L${x} 900 `;
+  el('path', { d }, T);
+  const N = G('nightStars'); let seed = 7;
+  const r = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  for (let i = 0; i < 46; i++) el('circle', { cx:(r() * 520 - 60).toFixed(0), cy:(r() * 520 - 240).toFixed(0), r:(r() * 1.6 + .6).toFixed(1), opacity:(r() * .6 + .4).toFixed(2) }, N);
+})();
 
 /* глаза */
 function buildEye(id, side){
@@ -618,12 +766,31 @@ const MOODS = {
   dance:    { name:'Танцор',     e:'🕺', eye:'happy', bl:[-6,-2], br:[-6,-2], mouth:'grin', blush:.6, shades:1,
               say:['Туц-туц-туц','Погнали!','Я на танцполе'], hint:'Тыкни по кроссовкам три раза подряд' },
   gum:      { name:'Жвачка',     e:'🫧', eye:'squeeze', bl:[2,5], br:[2,5], mouth:'frown', blush:.5,
-              say:['Эй!','Ну ты чего','Вся морда в жвачке'], hint:'Дождись пузыря из жвачки и лопни его' }
+              say:['Эй!','Ну ты чего','Вся морда в жвачке'], hint:'Дождись пузыря из жвачки и лопни его' },
+  owl:      { name:'Сова',       e:'🦉', eye:'open', lid:0, tilt:0, big:1, bl:[-11,-1], br:[-11,-1], mouth:'o', blush:.2, secret:1,
+              say:['Ты чего не спишь?','Ночь же!','Ух-ух, совы не спят'], hint:'Поиграй глубокой ночью' },
+  jealous:  { name:'Ревнивый',   e:'😒', eye:'open', lid:.5, tilt:.3, bl:[2,4], br:[-5,0], mouth:'pout', blush:.35, cheek:1.15, secret:1,
+              say:['Ты на других смотришь?!','А как же я?','Ну и иди к ним'], hint:'Загляни в таблицу к другим игрокам' }
 };
 const ORDER = ['cool','kind','cute','love','laugh','bliss','surprised','angry','offended','bored','sleep','grumpy','stylish',
-               'glutton','sneeze','dizzy','carry','dance','gum'];
+               'glutton','sneeze','dizzy','carry','dance','gum',
+               'owl','jealous'];
 const KEY = 'hamster.collected.v1';
 const collected = new Set((store.get(KEY, []) || []).filter(k => ORDER.includes(k)));
+/* Первые 19 — основные качества (за них корона), дальше — секретные. */
+const MAIN = 19, SECRETS = ORDER.length - MAIN;
+const mainCount = () => ORDER.slice(0, MAIN).filter(k => collected.has(k)).length;
+const secretCount = () => ORDER.slice(MAIN).filter(k => collected.has(k)).length;
+function dayKey(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+const todayKey = () => dayKey(new Date());
+const yesterdayKey = () => dayKey(new Date(Date.now() - 864e5));
+const PST = Object.assign({ total:0, unsent:0 }, store.get('hamster.pets', {}) || {});
+const ST = Object.assign({ n:0, last:'', best:0 }, store.get('hamster.streak', {}) || {});
+const streakNow = () => (ST.last === todayKey() || ST.last === yesterdayKey()) ? ST.n : 0;
+let DAY = store.get('hamster.day', null);
+if (!DAY || DAY.date !== todayKey()) DAY = { date:todayKey(), moods:[], pets:0, seeds:0, catchBest:0, done:false };
+const GAME = { on:false, phase:'', t0:0, score:0, items:[], spawnT:0, hx:200, target:200, endAt:0, best:+store.get('hamster.best', 0) || 0 };
+const W = Object.assign({ head:null, neck:null, face:null, bg:'plain' }, store.get('hamster.wear', {}) || {});
 
 /* ---------- звук (синтез, без файлов) ---------- */
 const A = { ctx:null, master:null, on: store.get('hamster.sound', true) !== false, noise:null, rustle:null };
@@ -771,28 +938,22 @@ function toast(text, ms = 2400){
 }
 function renderChips(newKey){
   chipsEl.innerHTML = '';
-  ORDER.forEach(k => {
-    const M = MOODS[k], has = collected.has(k);
+  ORDER.forEach((k, i) => {
+    const M = MOODS[k], has = collected.has(k), secret = i >= MAIN;
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'chip' + (has ? '' : ' locked') + (S.mood === k ? ' now' : '') + (k === newKey ? ' new' : '');
-    b.textContent = has ? M.e : '?';
-    b.setAttribute('aria-label', has ? M.name : 'Не открыто. Подсказка: ' + M.hint);
+    b.textContent = has ? M.e : secret ? '🔒' : '?';
+    b.setAttribute('aria-label', has ? M.name : (secret ? 'Секретное качество. Подсказка: ' : 'Не открыто. Подсказка: ') + M.hint);
     b.dataset.k = k;
     b.addEventListener('click', () => {
-      toast(has ? `${M.e} ${M.name}: ${M.hint.toLowerCase()}` : `Подсказка: ${M.hint.toLowerCase()}`, 2800);
+      toast(has ? `${M.e} ${M.name}: ${M.hint.toLowerCase()}` : `${secret ? 'Секрет 🤫' : 'Подсказка'}: ${M.hint.toLowerCase()}`, 2800);
     });
     chipsEl.appendChild(b);
   });
-  countEl.textContent = `${collected.size} / ${ORDER.length}`;
+  countEl.textContent = `${mainCount()}/${MAIN} · 🤫${secretCount()}/${SECRETS}`;
   resetBtn.hidden = collected.size === 0;
-  updateCrown();
-}
-function updateCrown(){
-  const all = collected.size === ORDER.length;
-  crownEl.style.display = all ? '' : 'none';
-  if (all && !S.crownShown){ S.crownShown = true; SP.bounce.v -= 200; }
-  if (!all) S.crownShown = false;
+  applyWear();
 }
 function markNowChip(){
   chipsEl.querySelectorAll('.chip').forEach(c => c.classList.toggle('now', c.dataset.k === S.mood));
@@ -830,26 +991,33 @@ function unlock(m){
   collected.add(m); store.set(KEY, [...collected]);
   renderChips(m);
   saveProgress();
-  if (dbOn() && collected.size === 6 && !store.get('hamster.codeHint', false)){
+  const n = mainCount();
+  if (dbOn() && n === 6 && !store.get('hamster.codeHint', false)){
     store.set('hamster.codeHint', true);
     setTimeout(() => toast('Чтобы не потерять качества, сохрани код из 🏆', 3200), 2600);
   }
-  if (dbOn() && !ME.name && collected.size === 3 && !store.get('hamster.boardHint', false)){
+  if (dbOn() && !ME.name && n === 3 && !store.get('hamster.boardHint', false)){
     store.set('hamster.boardHint', true);
     setTimeout(() => toast('Попади в таблицу участников: кнопка 🏆 вверху', 3200), 2600);
   }
   const M = MOODS[m];
-  if (collected.size === ORDER.length){
-    toast(`Все ${ORDER.length} качеств собраны! Держи корону 👑`, 4200);
+  if (ORDER.indexOf(m) >= MAIN){
+    toast(`Секретное качество: ${M.e} ${M.name}! 🤫 ${secretCount()}/${SECRETS}`, 3400);
+    SFX.fanfare();
+  } else if (n === MAIN){
+    if (!store.get('hamster.crownGiven', false)){ store.set('hamster.crownGiven', true); W.head = 'crown'; store.set('hamster.wear', W); applyWear(); SP.bounce.v -= 200; }
+    toast(`Все ${MAIN} качеств собраны! Держи корону 👑`, 4200);
     SFX.fanfare(); confetti();
   } else {
-    toast(`Новое качество: ${M.e} ${M.name} · ${collected.size}/${ORDER.length}`);
+    toast(`Новое качество: ${M.e} ${M.name} · ${n}/${MAIN}`);
     setTimeout(SFX.chime, 250);
   }
+  checkNewItems(true);
 }
 
 /* ---------- таблица участников и посещения ---------- */
-const dbOn = () => !TEST && !!(DB.url && DB.key);
+/* Временные страницы без адреса (data:, about:, blob: — например, предпросмотр файла) в базу не пишут. */
+const dbOn = () => !TEST && !/^(data|about|blob):$/.test(location.protocol) && !!(DB.url && DB.key);
 function rid(n){ const a = new Uint8Array(n); crypto.getRandomValues(a); return Array.from(a, b => b.toString(16).padStart(2, '0')).join(''); }
 function newUuid(){
   const h = rid(16).split(''); h[12] = '4'; h[16] = '89ab'[parseInt(h[16], 16) & 3];
@@ -882,15 +1050,23 @@ function dbCall(fn, body){
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
     .then(t => t ? JSON.parse(t) : null);
 }
-let saveTimer = 0, retryTimer = 0;
+let saveTimer = 0, retryTimer = 0, saveBusy = false, saveAgain = false;
 function saveProgress(now){
   if (!dbOn()) return Promise.resolve(null);
   clearTimeout(saveTimer);
-  const go = () => dbCall('hamster_save', { p_device:ME.id, p_secret:ME.secret, p_name:ME.name || null, p_mask:maskOf(), p_code:ME.code })
-    .then(res => {
-      if (res === 'too_fast' || res === 'slow_down'){ clearTimeout(retryTimer); retryTimer = setTimeout(() => saveProgress(true), res === 'too_fast' ? 60000 : 2500); }
-      return res;
-    }).catch(() => null);
+  const go = () => {
+    if (saveBusy){ saveAgain = true; return Promise.resolve('busy'); }
+    saveBusy = true;
+    const sent = Math.min(PST.unsent, 600);
+    return dbCall('hamster_save', { p_device:ME.id, p_secret:ME.secret, p_name:ME.name || null, p_mask:maskOf(), p_code:ME.code,
+                                    p_pets:sent, p_streak:streakNow(), p_catch:GAME.best })
+      .then(res => {
+        if (res === 'ok'){ PST.unsent = Math.max(0, PST.unsent - sent); store.set('hamster.pets', PST); }
+        if (res === 'too_fast' || res === 'slow_down'){ clearTimeout(retryTimer); retryTimer = setTimeout(() => saveProgress(true), res === 'too_fast' ? 60000 : 2500); }
+        return res;
+      }).catch(() => null)
+      .finally(() => { saveBusy = false; if (saveAgain){ saveAgain = false; setTimeout(() => saveProgress(true), 1200); } });
+  };
   if (now) return go();
   return new Promise(res => { saveTimer = setTimeout(() => go().then(res), 1500); });
 }
@@ -904,24 +1080,44 @@ function boardRow(cls, cells){
   cells.forEach(([c, text]) => { const sp = document.createElement('span'); sp.className = c; sp.textContent = text; li.appendChild(sp); });
   boardList.appendChild(li);
 }
+let boardKind = 'q';
 async function loadBoard(){
   boardStats.textContent = 'Загружаю…';
+  const kind = boardKind;
   try {
-    const [rows, st] = await Promise.all([dbCall('hamster_board', { p_device:ME.id }), dbCall('hamster_stats', {})]);
+    const [rows, st] = await Promise.all([dbCall('hamster_board', { p_device:ME.id, p_kind:kind }), dbCall('hamster_stats', {})]);
+    if (kind !== boardKind) return;
     if (st) boardStats.textContent = `👀 Заходили ${st.visits} ${plural(st.visits, 'раз', 'раза', 'раз')} · ${st.people} ${plural(st.people, 'человек', 'человека', 'человек')} · сегодня ${st.today}`;
     boardList.innerHTML = '';
+    S.boardOthers = Math.max(S.boardOthers || 0, (rows || []).filter(r => !r.me).length);
     if (!rows || !rows.length){
-      const li = document.createElement('li'); li.className = 'empty'; li.textContent = 'Пока никого. Впиши ник и будь первым!'; boardList.appendChild(li);
-    } else rows.forEach(r => boardRow(r.me ? 'me' : '', [['pl', r.place], ['nm', r.name + (r.me ? ' (ты)' : '')], ['sc', (r.crowned ? '👑 ' : '') + r.qualities + '/' + ORDER.length]]));
+      const li = document.createElement('li'); li.className = 'empty';
+      li.textContent = kind === 'w' ? 'На этой неделе ещё никто не гладил. Будь первым!' : kind === 'c' ? 'В мини-игру ещё никто не играл. Жми 🎮 внизу слева!' : 'Пока никого. Впиши ник и будь первым!';
+      boardList.appendChild(li);
+    } else rows.forEach(r => {
+      const sc = kind === 'w' ? `🖐 ${r.pets || 0}` : kind === 'c' ? `🌻 ${r.best_catch || 0}`
+        : (r.crowned ? '👑 ' : '') + r.qualities + '/' + MAIN + (r.secrets ? ` +${r.secrets}🤫` : '') + (r.streak > 1 ? ` 🔥${r.streak}` : '');
+      boardRow(r.me ? 'me' : '', [['pl', r.place], ['nm', r.name + (r.me ? ' (ты)' : '')], ['sc', sc]]);
+    });
   } catch (e) {
     boardStats.textContent = 'Не получилось загрузить таблицу. Проверь интернет и открой ещё раз.';
   }
 }
+$('#boardTabs').addEventListener('click', e => {
+  const b = e.target.closest('button[data-k]'); if (!b) return;
+  boardKind = b.dataset.k;
+  $('#boardTabs').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+  loadBoard();
+});
 function openBoard(){
   boardEl.hidden = false; nameInput.value = ME.name || ''; restoreMsg.textContent = ''; renderCode(); loadBoard();
+  S.boardOpenAt = clock(); S.boardOthers = 0;
   if (!isTouchFirst && !ME.name) setTimeout(() => nameInput.focus(), 50);
 }
-function closeBoard(){ boardEl.hidden = true; boardBtn.focus(); }
+function closeBoard(){
+  boardEl.hidden = true; boardBtn.focus();
+  if (S.boardOthers > 0 && clock() - (S.boardOpenAt || 0) > 1000) setTimeout(() => { if (!GAME.on && !S.carry) setTrans('jealous', 3400, clock()); }, 300);
+}
 boardBtn.addEventListener('click', openBoard);
 $('#boardClose').addEventListener('click', closeBoard);
 boardEl.addEventListener('click', e => { if (e.target === boardEl) closeBoard(); });
@@ -959,9 +1155,13 @@ restoreForm.addEventListener('submit', async e => {
       fromMask(r.mask || 0); store.set(KEY, [...collected]);
       if (r.name) ME.name = r.name;
       ME.code = code; store.set('hamster.me', ME);
+      if (r.pets > PST.total){ PST.total = r.pets; store.set('hamster.pets', PST); renderPets(); }
+      if (r.catch > GAME.best){ GAME.best = r.catch; store.set('hamster.best', GAME.best); }
+      if (r.streak > ST.best){ ST.best = r.streak; store.set('hamster.streak', ST); }
       renderChips(); renderCode(); nameInput.value = ME.name || ''; restoreInput.value = '';
-      restoreMsg.textContent = `Готово! Качеств: ${collected.size} из ${ORDER.length}.`;
-      toast(`Вернул! Качеств: ${collected.size} из ${ORDER.length}`, 3000);
+      restoreMsg.textContent = `Готово! Качеств: ${mainCount()} из ${MAIN}.`;
+      toast(`Вернул! Качеств: ${mainCount()} из ${MAIN}`, 3000);
+      checkNewItems(true);
       loadBoard();
     } else restoreMsg.textContent = r && r.status === 'not_found' ? 'Такого кода нет. Проверь буквы и цифры.' : 'Не получилось. Попробуй ещё раз.';
   } catch (err) {
@@ -1079,6 +1279,7 @@ function enterMood(m, now){
   S.mood = m; S.moodSince = now; S.fxT = 0;
   const M = MOODS[m];
   faceTargets(m);
+  noteMood(m);
   nowEl.textContent = `${M.e} ${M.name}`;
   markNowChip();
   if (M.say && (now - (S.lastSaid[m] || -1e9) > 5000)){ S.lastSaid[m] = now; say(pick(M.say)); }
@@ -1220,7 +1421,7 @@ function endPointer(e, cancelled){
   audioInit();
   if (S.carry && !S.carry.fall) dropCarry(now);
   const wasTap = !cancelled && P.down && now - P.downT < 320 && P.moved < 14;
-  if (wasTap){ const z = zoneAt(P.downX, P.downY); onTap(z, now); }
+  if (wasTap && !GAME.on){ const z = zoneAt(P.downX, P.downY); onTap(z, now); }
   P.down = false; P.id = null;
   try { stage.releasePointerCapture(e.pointerId); } catch (_) {}
   if (e.pointerType !== 'mouse'){
@@ -1298,6 +1499,7 @@ function updateFlights(dt, now){
 }
 function eatSeed(now){
   S.seeds++; S.lastSeed = now; S.chewUntil = now + 900; S.lastAct = now;
+  DAY.seeds++; saveDay(); checkQuests();
   SFX.crunch(); SP.chL.v += 1.5; SP.chR.v += 1.5;
   S.anger = Math.max(0, S.anger - .3); S.love = Math.min(1.05, S.love + .05);
   for (let i = 0; i < 3; i++) spawn('dot', 200 + rnd(-14, 14), 262, { r:2.2, color:'#9B8F84', vx:rnd(-50, 50), vy:rnd(-40, 10), g:300, life:.5 });
@@ -1392,11 +1594,13 @@ function tick(){
 
   if (now - P.lastMove > 90){ P.vx *= .8; P.vy *= .8; P.speed *= .8; P.rub *= .8; }
   const engaged = P.down || (P.type === 'mouse' && P.over);
-  const stroking = !S.carry && engaged && !!P.zone && now - P.lastMove < 120 && P.rub > 30;
+  const stroking = !S.carry && !GAME.on && engaged && !!P.zone && now - P.lastMove < 120 && P.rub > 30;
   const fast = stroking && P.rub > FAST;
 
   if (stroking){
     S.lastAct = now;
+    S.petAcc = (S.petAcc || 0) + dt;
+    if (S.petAcc >= .5){ S.petAcc -= .5; addPet(); }
     const key = ZONE_ACC[P.zone];
     const rough = fast && (key === 'head' || key === 'cheek');
     if (key && !rough){ S.acc[key] += dt * (key === 'belly' && fast ? 2 : 1); S.zoneT[key] = now; if (key === 'ear') S.earSide = P.x < 200 ? -1 : 1; }
@@ -1415,6 +1619,19 @@ function tick(){
   if (now - S.noseT > 500) S.noseTickle = Math.max(0, S.noseTickle - dt);
   S.anger = Math.min(1.2, S.anger);
 
+  /* мини-игра: всё остальное ждёт */
+  if (GAME.on){
+    S.lastAct = now;
+    updateGame(dt, now);
+    updateFlights(dt, now);
+    animate(dt, t, now, false);
+    return;
+  }
+  /* секретная «Сова»: глубокой ночью */
+  if (S.started && !S.owlTried && now > (S.owlCheck || 0)){
+    S.owlCheck = now + 2000;
+    if (new Date().getHours() < 5 && !S.trans && !S.carry){ S.owlTried = true; setTrans('owl', 3400, now); }
+  }
   /* приколы */
   if (S.noseTickle > .9 && !S.trans && !S.carry && S.mood !== 'angry'){ S.noseTickle = 0; setTrans('sneeze', 2500, now); }
   if (now - S.circT > 800) S.circSum *= Math.exp(-dt * 3);
@@ -1628,7 +1845,7 @@ function animate(dt, t, now, stroking){
   });
 
   /* очки */
-  S.shadesA += (((M.shades ? 1 : 0)) - S.shadesA) * (1 - Math.exp(-dt * 9));
+  S.shadesA += (((M.shades || W.face === 'shades') ? 1 : 0) - S.shadesA) * (1 - Math.exp(-dt * 9));
   shadesEl.setAttribute('opacity', clamp(S.shadesA * 1.4, 0, 1).toFixed(3));
   shadesEl.setAttribute('transform', `translate(0 ${((1 - S.shadesA) * -46).toFixed(2)})`);
 
@@ -1654,6 +1871,7 @@ function animate(dt, t, now, stroking){
   const breath = Math.sin(t * breathR * Math.PI) * breathA;
   let cdx = 0, cdy = 0, rot = '';
   if (S.carry){ cdx = S.carry.dx.x; cdy = S.carry.dy.x; rot = ` rotate(${S.carry.th.toFixed(2)} ${S.carry.gx.toFixed(1)} ${S.carry.gy.toFixed(1)})`; }
+  if (GAME.on || Math.abs(GAME.hx - 200) > .5){ if (!GAME.on) GAME.hx += (200 - GAME.hx) * (1 - Math.exp(-dt * 6)); cdx += GAME.hx - 200; }
   hamG.setAttribute('transform', `translate(${(jitter + cdx).toFixed(2)} ${(SP.bounce.x + cdy).toFixed(2)})${rot} translate(200 548) scale(${(1 - breath * .4).toFixed(4)} ${(1 + breath).toFixed(4)}) translate(-200 -548)`);
   const lift = clamp(-(SP.bounce.x + cdy), 0, 400), shS = clamp(1 - lift / 420, .35, 1);
   shadowEl.setAttribute('transform', `translate(${(cdx * .9).toFixed(1)} 0) translate(200 549) scale(${shS.toFixed(3)} ${shS.toFixed(3)}) translate(-200 -549)`);
@@ -1696,11 +1914,270 @@ function animate(dt, t, now, stroking){
   updateParts(dt);
 }
 
+/* ---------- поглаживания ---------- */
+const petsEl = $('#petsNow');
+function renderPets(){ petsEl.textContent = `🖐 ${PST.total}`; }
+let petSaveT = 0;
+function addPet(){
+  PST.total++; PST.unsent++; DAY.pets++;
+  renderPets();
+  const now = clock();
+  if (now - petSaveT > 2000){ petSaveT = now; store.set('hamster.pets', PST); saveDay(); }
+  checkQuests();
+}
+
+/* ---------- задание дня и серия ---------- */
+const QUEST_POOL = [
+  { k:'m:angry',   e:'😡', s:'Разозли',   t:'Разозли Хамстера' },
+  { k:'m:laugh',   e:'🤣', s:'Рассмеши',  t:'Рассмеши — пощекочи пузо' },
+  { k:'m:love',    e:'😍', s:'Влюби',     t:'Влюби в себя — гладь долго и нежно' },
+  { k:'m:dance',   e:'🕺', s:'Дискотека', t:'Устрой дискотеку' },
+  { k:'m:sneeze',  e:'🤧', s:'Чихни',     t:'Заставь чихнуть' },
+  { k:'m:dizzy',   e:'😵', s:'Укачай',    t:'Укачай кругами' },
+  { k:'m:carry',   e:'🪂', s:'Подними',   t:'Подними в воздух' },
+  { k:'m:gum',     e:'🫧', s:'Жвачка',    t:'Лопни пузырь из жвачки' },
+  { k:'m:bliss',   e:'😌', s:'Почеши',    t:'Почеши за ушком' },
+  { k:'m:cool',    e:'😎', s:'Крутой',    t:'Сделай его крутым' },
+  { k:'m:stylish', e:'💇', s:'Причёска',  t:'Растрепли чёлку' },
+  { k:'m:sleep',   e:'😴', s:'Усыпи',     t:'Дай ему уснуть' },
+  { k:'p:150',     e:'🖐', s:'Погладь',   t:'Погладь 150 раз', n:150 },
+  { k:'p:300',     e:'🖐', s:'Погладь',   t:'Погладь 300 раз', n:300 },
+  { k:'s:10',      e:'🌻', s:'Семечки',   t:'Скорми 10 семечек', n:10 },
+  { k:'c:15',      e:'🎮', s:'Игра',      t:'Поймай 15 семечек в мини-игре', n:15 },
+  { k:'c:25',      e:'🎮', s:'Игра',      t:'Поймай 25 семечек в мини-игре', n:25 }
+];
+function seeded(str){
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return (h >>> 0) / 4294967296; };
+}
+function questsFor(date){
+  const r = seeded('hamster:' + date), pool = QUEST_POOL.slice(), out = [];
+  while (out.length < 2 && pool.length){
+    const q = pool.splice(Math.floor(r() * pool.length), 1)[0];
+    if (out.some(o => o.k[0] === q.k[0] && q.k[0] !== 'm')) continue;
+    out.push(q);
+  }
+  return out;
+}
+function questProgress(q){
+  const [type, v] = q.k.split(':');
+  if (type === 'm') return [DAY.moods.includes(v) ? 1 : 0, 1];
+  const have = type === 'p' ? DAY.pets : type === 's' ? DAY.seeds : DAY.catchBest;
+  return [Math.min(have, q.n), q.n];
+}
+const questEl = $('#quest');
+function renderQuest(){
+  const qs = questsFor(DAY.date), sn = streakNow();
+  const parts = qs.map(q => { const [h, n] = questProgress(q); return `${q.e} ${q.s}${h >= n ? ' ✓' : n > 1 ? ` ${h}/${n}` : ''}`; });
+  questEl.innerHTML = '';
+  const a = document.createElement('span'); a.className = 'q'; a.textContent = (DAY.done ? '✅ ' : '🎯 ') + parts.join(' · ');
+  const b = document.createElement('span'); b.className = 'st'; b.textContent = `🔥 ${sn}`;
+  questEl.append(a, b);
+  questEl.classList.toggle('done', !!DAY.done);
+  questEl.setAttribute('aria-label', 'Задание дня: ' + qs.map(q => q.t).join(', ') + (DAY.done ? '. Выполнено' : '') + `. Серия дней: ${sn}`);
+}
+questEl.addEventListener('click', () => {
+  const qs = questsFor(DAY.date), sn = streakNow();
+  toast(DAY.done ? `Задание дня выполнено ✅ Серия: ${sn} 🔥 Завтра будет новое.`
+    : `Задание дня: ${qs.map(q => q.t.toLowerCase()).join(' и ')}. Выполняй каждый день — растёт серия 🔥`, 4200);
+});
+function saveDay(){ store.set('hamster.day', DAY); }
+function noteMood(m){
+  if (m === 'neutral' || GAME.on || DAY.moods.includes(m)) return;
+  DAY.moods.push(m); saveDay(); checkQuests();
+}
+let questRenderT = 0;
+function checkQuests(){
+  if (DAY.date !== todayKey()){ DAY = { date:todayKey(), moods:[], pets:0, seeds:0, catchBest:0, done:false }; saveDay(); }
+  if (!DAY.done){
+    const qs = questsFor(DAY.date);
+    if (qs.every(q => { const [h, n] = questProgress(q); return h >= n; })){
+      DAY.done = true; saveDay();
+      const t = todayKey();
+      if (ST.last !== t){ ST.n = ST.last === yesterdayKey() ? ST.n + 1 : 1; ST.last = t; ST.best = Math.max(ST.best, ST.n); store.set('hamster.streak', ST); }
+      setTimeout(() => { toast(`🎯 Задание дня выполнено! Серия: ${ST.n} 🔥`, 3600); SFX.fanfare(); confetti(); }, 900);
+      saveProgress(); checkNewItems(true);
+    }
+  }
+  const now = clock();
+  if (now - questRenderT > 400 || DAY.done){ questRenderT = now; renderQuest(); }
+}
+
+/* ---------- гардероб и фоны ---------- */
+const WEAR_ITEMS = [
+  { id:'cap',        slot:'head', e:'🧢', name:'Кепка',    need:{ q:5 } },
+  { id:'chain',      slot:'neck', e:'⛓️', name:'Цепь',     need:{ q:8 } },
+  { id:'headphones', slot:'head', e:'🎧', name:'Наушники', need:{ q:12 } },
+  { id:'shades',     slot:'face', e:'🕶️', name:'Очки',     need:{ q:15 } },
+  { id:'beanie',     slot:'head', e:'🧶', name:'Шапка',    need:{ streak:3 } },
+  { id:'crown',      slot:'head', e:'👑', name:'Корона',   need:{ q:19 } }
+];
+const BGS = [
+  { id:'plain', e:'⬜', name:'Обычный' },
+  { id:'store', e:'🛍️', name:'Магазин' },
+  { id:'room',  e:'🛋️', name:'Комната' },
+  { id:'night', e:'🌙', name:'Ночь', need:{ secret:'owl' } }
+];
+const needText = n => n.q ? `${n.q} качеств` : n.streak ? `серия ${n.streak} дня 🔥` : n.secret ? `секрет «${MOODS[n.secret].name}»` : '';
+function itemOpen(it){
+  const n = it.need; if (!n) return true;
+  if (n.q) return mainCount() >= n.q;
+  if (n.streak) return ST.best >= n.streak;
+  if (n.secret) return collected.has(n.secret);
+  return true;
+}
+function applyWear(){
+  let fix = false;
+  WEAR_ITEMS.forEach(it => { if (W[it.slot] === it.id && !itemOpen(it)){ W[it.slot] = null; fix = true; } });
+  const bgIt = BGS.find(b => b.id === W.bg); if (!bgIt || !itemOpen(bgIt)){ W.bg = 'plain'; fix = true; }
+  if (fix) store.set('hamster.wear', W);
+  for (const id in WEAR_EL) WEAR_EL[id].style.display = (W.head === id || W.neck === id) ? '' : 'none';
+  for (const id in BG_EL) BG_EL[id].style.display = W.bg === id ? '' : 'none';
+}
+function wearToggle(id){
+  const it = WEAR_ITEMS.find(x => x.id === id); if (!it) return;
+  if (!itemOpen(it)){ toast(`🔒 ${it.e} ${it.name}: нужно ${needText(it.need)}`, 2600); return; }
+  W[it.slot] = W[it.slot] === id ? null : id; store.set('hamster.wear', W);
+  applyWear(); renderWard(); SFX.pat(); SP.bounce.v -= 120;
+}
+function setBg(id){
+  const it = BGS.find(x => x.id === id); if (!it) return;
+  if (!itemOpen(it)){ toast(`🔒 ${it.e} ${it.name}: нужно ${needText(it.need)}`, 2600); return; }
+  W.bg = id; store.set('hamster.wear', W); applyWear(); renderWard();
+}
+function wcard(list, it, on, open, status, onClick){
+  const b = document.createElement('button'); b.type = 'button';
+  b.className = 'wcard' + (on ? ' on' : '') + (open ? '' : ' locked');
+  const e = document.createElement('span'); e.className = 'we'; e.textContent = open ? it.e : '🔒';
+  const n = document.createElement('span'); n.className = 'wn'; n.textContent = it.name;
+  const st = document.createElement('span'); st.className = 'ws'; st.textContent = status;
+  b.append(e, n, st); b.addEventListener('click', onClick); list.appendChild(b);
+}
+const wardEl = $('#ward'), wardItems = $('#wardItems'), wardBgs = $('#wardBgs');
+function renderWard(){
+  wardItems.innerHTML = ''; wardBgs.innerHTML = '';
+  WEAR_ITEMS.forEach(it => { const on = W[it.slot] === it.id, open = itemOpen(it);
+    wcard(wardItems, it, on, open, !open ? needText(it.need) : on ? 'надето ✓' : 'надеть', () => wearToggle(it.id)); });
+  BGS.forEach(it => { const on = W.bg === it.id, open = itemOpen(it);
+    wcard(wardBgs, it, on, open, !open ? needText(it.need) : on ? 'выбран ✓' : 'выбрать', () => setBg(it.id)); });
+}
+function openWard(){ renderWard(); wardEl.hidden = false; }
+function closeWard(){ wardEl.hidden = true; }
+$('#wardBtn').addEventListener('click', openWard);
+$('#wardClose').addEventListener('click', closeWard);
+wardEl.addEventListener('click', e => { if (e.target === wardEl) closeWard(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !wardEl.hidden) closeWard(); });
+function checkNewItems(announce){
+  const seen = new Set(store.get('hamster.seen', []) || []);
+  const fresh = [...WEAR_ITEMS, ...BGS].filter(it => it.need && itemOpen(it) && !seen.has(it.id));
+  if (!fresh.length) return;
+  fresh.forEach(it => seen.add(it.id)); store.set('hamster.seen', [...seen]);
+  if (announce) setTimeout(() => toast(fresh.length === 1 ? `👕 В гардеробе новое: ${fresh[0].e} ${fresh[0].name}` : `👕 В гардеробе новые вещи: ${fresh.length}`, 3000), 3000);
+}
+
+/* ---------- мини-игра «Лови семечки» ---------- */
+const hud = $('#gameHud'), gScore = $('#gScore'), gTime = $('#gTime'), gBig = $('#gameBig');
+const GAME_LEN = 20;
+function startGame(){
+  if (GAME.on) return;
+  audioInit(); firstTouch(true);
+  [boardEl, wardEl, welEl].forEach(x => { x.hidden = true; });
+  const now = clock();
+  Object.assign(GAME, { on:true, phase:'count', t0:now, score:0, items:[], spawnT:0, target:200 });
+  S.trans = null; S.carry = null; S.spitAt = 0;
+  if (S.gum.on){ S.gum.on = false; gumG.style.display = 'none'; }
+  if (S.mood !== 'neutral') enterMood('neutral', now);
+  stage.classList.add('gaming'); stage.classList.remove('party');
+  hud.hidden = false; gBig.hidden = false; gBig.textContent = '3';
+  gScore.textContent = '0'; gTime.textContent = String(GAME_LEN);
+  bubble.classList.remove('on'); SFX.pat();
+}
+function spawnItem(t){
+  const r = Math.random(), kind = r < .1 ? 'gold' : r < .2 ? 'chili' : 'seed';
+  let n;
+  if (kind === 'chili'){
+    n = el('g', {}, fx);
+    el('path', { d:'M-5 -8 C6 -12 11 -2 7 9 C4 16 -6 15 -7 7 C-8 1 -9 -5 -5 -8 Z', fill:'#E2452F', stroke:C.line, 'stroke-width':2 }, n);
+    el('path', { d:'M-3 -9 Q-1 -16 4 -17', stroke:C.green, 'stroke-width':3, fill:'none', 'stroke-linecap':'round' }, n);
+  } else n = el('path', { d:SEED, fill:kind === 'gold' ? C.gold : '#2E2E33', stroke:C.line, 'stroke-width':1.6 }, fx);
+  GAME.items.push({ n, kind, x:rnd(40, 360), y:-70, vy:rnd(150, 230) + t * 7, rot:rnd(0, 360), vr:rnd(-220, 220), s:kind === 'gold' ? 2.4 : kind === 'chili' ? 1.7 : 2 });
+}
+function catchItem(it, now){
+  if (it.kind === 'chili'){
+    GAME.score = Math.max(0, GAME.score - 2);
+    say('Ай, остро! 🌶'); F.cur.tint = .35; SFX.growl(); SP.bounce.v -= 160;
+    spawn('steam', GAME.hx - 110, 70, { r:8, vx:-30, vy:-80, life:.8, grow:1.4 }); spawn('steam', GAME.hx + 110, 70, { r:8, vx:30, vy:-80, life:.8, grow:1.4 });
+    spawn('text', it.x, 210, { text:'−2', color:'#E2452F', size:28, vy:-70, life:.8, stroke:'#FFF9F0' });
+  } else {
+    const add = it.kind === 'gold' ? 3 : 1;
+    GAME.score += add; S.chewUntil = now + 500; SFX.crunch(); if (add > 1) SFX.chime();
+    SP.chL.v += 1.2; SP.chR.v += 1.2;
+    spawn('text', it.x, 210, { text:'+' + add, color:add > 1 ? '#D9A520' : C.green, size:add > 1 ? 32 : 24, vy:-70, life:.8, stroke:'#FFF9F0' });
+    if (add > 1) spawn('spark', it.x, 230, { vy:-40, life:.7, vr:160 });
+  }
+  gScore.textContent = GAME.score;
+}
+function endGame(now){
+  GAME.phase = 'end'; GAME.endAt = now + 1600;
+  GAME.items.forEach(it => it.n.remove()); GAME.items = [];
+  const rec = GAME.score > GAME.best;
+  if (rec){ GAME.best = GAME.score; store.set('hamster.best', GAME.best); }
+  DAY.catchBest = Math.max(DAY.catchBest, GAME.score); saveDay(); checkQuests();
+  gBig.hidden = false; gBig.textContent = '🌻 ' + GAME.score;
+  toast(rec && GAME.score > 0 ? `Новый рекорд: ${GAME.score} 🌻!` : `Поймал ${GAME.score} 🌻 · рекорд ${GAME.best}`, 3200);
+  if (rec && GAME.score > 0){ SFX.fanfare(); confetti(); } else SFX.chime();
+  saveProgress();
+}
+function updateGame(dt, now){
+  const t = (now - GAME.t0) / 1000;
+  if (GAME.phase === 'count'){
+    gBig.textContent = t < .8 ? '3' : t < 1.6 ? '2' : t < 2.4 ? '1' : 'Лови!';
+    if (t >= 2.9){ GAME.phase = 'play'; GAME.t0 = now; gBig.hidden = true; }
+    return;
+  }
+  if (GAME.phase === 'play'){
+    const left = Math.max(0, GAME_LEN - t);
+    gTime.textContent = String(Math.ceil(left));
+    if (P.down || (P.type === 'mouse' && P.over)) GAME.target = clamp(P.x, 70, 330);
+    GAME.hx += (GAME.target - GAME.hx) * (1 - Math.exp(-dt * 16));
+    GAME.spawnT -= dt;
+    if (GAME.spawnT <= 0 && left > .7){ GAME.spawnT = Math.max(.3, .62 - t * .016); spawnItem(t); }
+    const mx = GAME.hx, my = 254;
+    for (let i = GAME.items.length - 1; i >= 0; i--){
+      const it = GAME.items[i];
+      it.y += it.vy * dt; it.rot += it.vr * dt;
+      it.n.setAttribute('transform', `translate(${it.x.toFixed(1)} ${it.y.toFixed(1)}) rotate(${it.rot.toFixed(0)}) scale(${it.s})`);
+      if (it.y > my - 28 && it.y < my + 32 && Math.abs(it.x - mx) < 40){ catchItem(it, now); it.n.remove(); GAME.items.splice(i, 1); continue; }
+      if (it.y > 600){ it.n.remove(); GAME.items.splice(i, 1); }
+    }
+    if (left <= 0) endGame(now);
+    return;
+  }
+  if (GAME.phase === 'end' && now > GAME.endAt){
+    GAME.on = false; GAME.phase = '';
+    hud.hidden = true; gBig.hidden = true; stage.classList.remove('gaming');
+    S.lastAct = now;
+  }
+}
+$('#gameBtn').addEventListener('click', startGame);
+document.addEventListener('keydown', e => {
+  if (!GAME.on || GAME.phase !== 'play') return;
+  if (e.key === 'ArrowLeft'){ GAME.target = clamp(GAME.target - 45, 70, 330); e.preventDefault(); }
+  if (e.key === 'ArrowRight'){ GAME.target = clamp(GAME.target + 45, 70, 330); e.preventDefault(); }
+});
+
 /* ---------- старт ---------- */
 faceTargets('neutral');
 for (const k in F.tgt) F.cur[k] = F.tgt[k];
 setEyeType(eyes.L, 'open'); setEyeType(eyes.R, 'open'); setMouth('smirk');
-renderChips(); renderSound();
+if (mainCount() === MAIN && !store.get('hamster.crownGiven', false)){ store.set('hamster.crownGiven', true); if (!W.head) W.head = 'crown'; store.set('hamster.wear', W); }
+renderChips(); renderSound(); renderPets(); renderQuest();
+checkNewItems(true);
+setInterval(() => { if (PST.unsent > 0) saveProgress(true); }, 20000);
+setInterval(() => {
+  if (DAY.date !== todayKey()){ DAY = { date:todayKey(), moods:[], pets:0, seeds:0, catchBest:0, done:false }; saveDay(); renderQuest(); }
+}, 30000);
 tick();
 requestAnimationFrame(loop);
 
@@ -1710,7 +2187,11 @@ window.hamster = {
   state:() => ({ mood:S.mood, anger:+S.anger.toFixed(2), love:+S.love.toFixed(2), seeds:S.seeds, carry:!!S.carry, gum:S.gum.on,
                  audio:A.ctx ? A.ctx.state : 'нет', collected:[...collected],
                  idle:+((clock() - S.lastAct) / 1000).toFixed(1), gumIn:S.nextGum ? +((S.nextGum - clock()) / 1000).toFixed(1) : null, trans:S.trans }),
-  badName, mask:maskOf, dbOn
+  badName, mask:maskOf, dbOn,
+  game:{ start:() => startGame(), state:() => ({ on:GAME.on, phase:GAME.phase, score:GAME.score, best:GAME.best, items:GAME.items.map(i => [i.x, i.y, i.kind]) }) },
+  wear:{ set:id => wearToggle(id), bg:id => setBg(id), state:() => Object.assign({}, W) },
+  pets:() => PST.total, quest:() => ({ list:questsFor(DAY.date).map(q => q.k), day:DAY, streak:streakNow() }),
+  closeBoard:() => closeBoard(), setOthers:n => { S.boardOthers = n; S.boardOpenAt = clock() - 2000; }
 };
 })();
 </script>
