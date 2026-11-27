@@ -1,0 +1,16 @@
+# Хамстер: раз в день стучится в базу Supabase, чтобы бесплатный проект не уснул от недели тишины.
+# Живёт в открытом репозитории Rust-Hack/hamster (копируется туда при выкладке). Ключ публичный, не секрет.
+name: Не дать базе уснуть
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Запрос к счётчикам Хамстера
+        run: |
+          curl -fsS -X POST "https://kpeulpgrojmcxqizgdhy.supabase.co/rest/v1/rpc/hamster_stats" \
+            -H "apikey: sb_publishable_TA0mZa_ikApfY4lGoNsqRQ_muU7s3_l" \
+            -H "Content-Type: application/json" -d '{}'

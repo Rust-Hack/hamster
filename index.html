@@ -7,6 +7,22 @@
 <meta name="description" content="Хамстер — погладь хомяка и собери все его качества.">
 <title>Хамстер</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='16' cy='14' r='9' fill='%23E8A35F' stroke='%232B1D14' stroke-width='3'/%3E%3Ccircle cx='48' cy='14' r='9' fill='%23E8A35F' stroke='%232B1D14' stroke-width='3'/%3E%3Cellipse cx='32' cy='36' rx='26' ry='24' fill='%23E8A35F' stroke='%232B1D14' stroke-width='3'/%3E%3Cpath d='M8 30 C8 12 56 12 56 30 C48 22 16 22 8 30Z' fill='%234A2D1C'/%3E%3Ccircle cx='23' cy='36' r='4' fill='%232B1D14'/%3E%3Ccircle cx='41' cy='36' r='4' fill='%232B1D14'/%3E%3Cpath d='M28 46 Q32 50 36 45' stroke='%232B1D14' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Хамстер">
+<meta property="og:title" content="Хамстер — погладь меня">
+<meta property="og:description" content="Гладь, корми, крути и поднимай хомяка. Собери все 19 его качеств и попади в таблицу друзей.">
+<meta property="og:url" content="https://rust-hack.github.io/hamster/">
+<meta property="og:image" content="https://rust-hack.github.io/hamster/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ru_RU">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Хамстер">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
   :root{
     --bg:#F4EDE4; --card:#FFFDF9; --ink:#2B1D14; --muted:#7A6A5D; --line:rgba(43,29,20,.13);
@@ -107,6 +123,13 @@
   .board-list .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
   .board-list .sc{font-variant-numeric:tabular-nums;font-weight:800}
   .sheet-note{margin:12px 2px 0;font-size:12.5px;color:var(--muted);line-height:1.4}
+  .recover{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+  .recover h3{margin:0 0 6px;font-size:16px}
+  .recover .sheet-note{margin:0 2px 10px}
+  .code-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 6px;font-size:14px;color:var(--muted)}
+  .code-row b{font:800 20px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:2px;color:var(--ink)}
+  .restore-msg{margin:-4px 2px 0;font-size:13px;color:var(--muted);min-height:1.2em}
+  .install{display:block;margin:4px auto 0}
   @media (prefers-reduced-motion: reduce){ #hint{animation:none} .chip.new{animation:none} .disco{animation:none} }
 </style>
 </head>
@@ -160,6 +183,7 @@
     </div>
     <div class="chips" id="chips"></div>
     <p class="tip">Гладь, тыкай, корми, крути, поднимай. Нажми на «?», будет подсказка.</p>
+    <button class="link-btn install" id="installBtn" type="button" hidden>📲 Поставить на экран «Домой»</button>
   </section>
 </main>
 
@@ -177,6 +201,16 @@
       <button type="submit">Сохранить</button>
     </form>
     <ol class="board-list" id="boardList"></ol>
+    <div class="recover">
+      <h3>Код восстановления</h3>
+      <div class="code-row"><span>Твой код:</span><b id="myCode">…</b><button class="link-btn" id="copyCode" type="button">скопировать</button></div>
+      <p class="sheet-note">Сохрани его в заметках. На новом телефоне, после чистки Safari или на иконке «Домой» впиши код ниже — вернутся качества и место в таблице.</p>
+      <form class="name-row" id="restoreForm" autocomplete="off">
+        <input id="restoreInput" maxlength="12" placeholder="Код, например ABCD-2345" autocapitalize="characters" spellcheck="false" enterkeyhint="done" aria-label="Код восстановления">
+        <button type="submit">Вернуть</button>
+      </form>
+      <p class="restore-msg" id="restoreMsg" role="status"></p>
+    </div>
     <p class="sheet-note">В таблице видно только ник и сколько качеств собрано. Больше качеств — выше; при равенстве выше тот, кто успел раньше.</p>
   </div>
 </div>
@@ -209,6 +243,8 @@ const SHARE_URL = 'https://rust-hack.github.io/hamster/';
 /* Таблица участников и посещения — база Supabase. Ключ публичный (anon / publishable): его и так видно в коде любой страницы.
    Секретный ключ (service_role / secret) сюда не класть никогда. Пусто — кнопка таблицы спрятана, игра работает как раньше. */
 const DB = { url:'https://kpeulpgrojmcxqizgdhy.supabase.co', key:'sb_publishable_TA0mZa_ikApfY4lGoNsqRQ_muU7s3_l' };
+/* ?test=1 — режим проверки: база и офлайн-кеш выключены, ничего не пишется на сервер. */
+const TEST = /[?&]test=1\b/.test(location.search);
 
 /* ---------- цвета ---------- */
 const C = {
@@ -742,7 +778,7 @@ function markNowChip(){
 }
 resetBtn.addEventListener('click', () => {
   if (!confirm('Начать собирать качества заново?')) return;
-  collected.clear(); store.set(KEY, []); renderChips(); toast('Собираем заново'); submitScore();
+  collected.clear(); store.set(KEY, []); renderChips(); toast('Собираем заново'); saveProgress();
 });
 const ICON_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
 const ICON_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>';
@@ -771,7 +807,11 @@ function unlock(m){
   if (m === 'neutral' || collected.has(m)) return;
   collected.add(m); store.set(KEY, [...collected]);
   renderChips(m);
-  submitScore();
+  saveProgress();
+  if (dbOn() && collected.size === 6 && !store.get('hamster.codeHint', false)){
+    store.set('hamster.codeHint', true);
+    setTimeout(() => toast('Чтобы не потерять качества, сохрани код из 🏆', 3200), 2600);
+  }
   if (dbOn() && !ME.name && collected.size === 3 && !store.get('hamster.boardHint', false)){
     store.set('hamster.boardHint', true);
     setTimeout(() => toast('Попади в таблицу участников: кнопка 🏆 вверху', 3200), 2600);
@@ -787,17 +827,32 @@ function unlock(m){
 }
 
 /* ---------- таблица участников и посещения ---------- */
-const dbOn = () => !!(DB.url && DB.key);
+const dbOn = () => !TEST && !!(DB.url && DB.key);
 function rid(n){ const a = new Uint8Array(n); crypto.getRandomValues(a); return Array.from(a, b => b.toString(16).padStart(2, '0')).join(''); }
 function newUuid(){
   const h = rid(16).split(''); h[12] = '4'; h[16] = '89ab'[parseInt(h[16], 16) & 3];
   const x = h.join(''); return `${x.slice(0, 8)}-${x.slice(8, 12)}-${x.slice(12, 16)}-${x.slice(16, 20)}-${x.slice(20)}`;
 }
+const CODE_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function genCode(){ const a = new Uint8Array(8); crypto.getRandomValues(a); return Array.from(a, b => CODE_ABC[b & 31]).join(''); }
+const fmtCode = c => c ? c.slice(0, 4) + '-' + c.slice(4) : '';
 const ME = (() => {
   let v = store.get('hamster.me', null);
-  if (!v || !v.id || !v.secret){ v = { id:newUuid(), secret:rid(24), name:'' }; store.set('hamster.me', v); }
+  if (!v || !v.id || !v.secret) v = { id:newUuid(), secret:rid(24), name:'' };
+  if (!v.code) v.code = genCode();
+  store.set('hamster.me', v);
   return v;
 })();
+/* Порядок ORDER нельзя менять: качество = номер бита в маске на сервере. Новые качества — только в конец. */
+const maskOf = () => ORDER.reduce((m, k, i) => collected.has(k) ? m | (1 << i) : m, 0);
+function fromMask(m){ ORDER.forEach((k, i) => { if (m & (1 << i)) collected.add(k); }); }
+const BAD_RU = /(хуй|хуё|хуе|хуя|пизд|ёб|ебан|ебат|ебал|ебуч|ебло|заеб|уеб|выеб|поеб|наеб|бля|сука|суки|мудак|мудил|мудо|пидор|пидар|пидр|гандон|залуп|шлюх|дроч)/;
+const BAD_EN = /(fuck|shit|bitch|cunt|nigg|whore|fagg)/;
+const LOOK = { a:'а', c:'с', e:'е', o:'о', p:'р', x:'х', y:'у', k:'к', m:'м', t:'т', h:'н', '0':'о', '3':'з' };
+function badName(s){
+  const l = s.toLowerCase();
+  return BAD_RU.test(l.replace(/[aceopxykmth03]/g, ch => LOOK[ch]).replace(/[^а-яё]/g, '')) || BAD_EN.test(l.replace(/[^a-z]/g, ''));
+}
 function dbCall(fn, body){
   const h = { apikey:DB.key, 'Content-Type':'application/json' };
   if (DB.key.startsWith('eyJ')) h.Authorization = 'Bearer ' + DB.key;
@@ -805,17 +860,23 @@ function dbCall(fn, body){
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
     .then(t => t ? JSON.parse(t) : null);
 }
-let submitTimer = 0;
-function submitScore(now){
-  if (!dbOn() || !ME.name) return Promise.resolve(null);
-  clearTimeout(submitTimer);
-  const go = () => dbCall('hamster_submit', { p_device:ME.id, p_secret:ME.secret, p_name:ME.name, p_qualities:collected.size }).catch(() => null);
+let saveTimer = 0, retryTimer = 0;
+function saveProgress(now){
+  if (!dbOn()) return Promise.resolve(null);
+  clearTimeout(saveTimer);
+  const go = () => dbCall('hamster_save', { p_device:ME.id, p_secret:ME.secret, p_name:ME.name || null, p_mask:maskOf(), p_code:ME.code })
+    .then(res => {
+      if (res === 'too_fast' || res === 'slow_down'){ clearTimeout(retryTimer); retryTimer = setTimeout(() => saveProgress(true), res === 'too_fast' ? 60000 : 2500); }
+      return res;
+    }).catch(() => null);
   if (now) return go();
-  return new Promise(res => { submitTimer = setTimeout(() => go().then(res), 1500); });
+  return new Promise(res => { saveTimer = setTimeout(() => go().then(res), 1500); });
 }
 const boardEl = $('#board'), boardBtn = $('#boardBtn'), boardList = $('#boardList'), boardStats = $('#boardStats');
 const nameForm = $('#nameForm'), nameInput = $('#nameInput');
+const myCodeEl = $('#myCode'), copyCodeBtn = $('#copyCode'), restoreForm = $('#restoreForm'), restoreInput = $('#restoreInput'), restoreMsg = $('#restoreMsg');
 const plural = (n, one, few, many) => { const a = n % 10, b = n % 100; return a === 1 && b !== 11 ? one : a >= 2 && a <= 4 && (b < 10 || b >= 20) ? few : many; };
+function renderCode(){ myCodeEl.textContent = fmtCode(ME.code); }
 function boardRow(cls, cells){
   const li = document.createElement('li'); if (cls) li.className = cls;
   cells.forEach(([c, text]) => { const sp = document.createElement('span'); sp.className = c; sp.textContent = text; li.appendChild(sp); });
@@ -835,7 +896,7 @@ async function loadBoard(){
   }
 }
 function openBoard(){
-  boardEl.hidden = false; nameInput.value = ME.name || ''; loadBoard();
+  boardEl.hidden = false; nameInput.value = ME.name || ''; restoreMsg.textContent = ''; renderCode(); loadBoard();
   if (!isTouchFirst && !ME.name) setTimeout(() => nameInput.focus(), 50);
 }
 function closeBoard(){ boardEl.hidden = true; boardBtn.focus(); }
@@ -847,12 +908,62 @@ nameForm.addEventListener('submit', async e => {
   e.preventDefault();
   const v = nameInput.value.replace(/\s+/g, ' ').trim().slice(0, 20);
   if (v.length < 2){ boardStats.textContent = 'Ник — от 2 до 20 букв.'; return; }
+  if (badName(v)){ boardStats.textContent = 'Этот ник не подойдёт, придумай другой 🙂'; return; }
+  const prev = ME.name;
   ME.name = v; store.set('hamster.me', ME); nameInput.value = v; nameInput.blur();
-  const res = await submitScore(true);
+  const res = await saveProgress(true);
   if (res === null) boardStats.textContent = 'Не получилось сохранить. Проверь интернет.';
+  else if (res === 'bad_word' || res === 'bad_name'){
+    ME.name = prev; store.set('hamster.me', ME); nameInput.value = prev || '';
+    boardStats.textContent = 'Этот ник не подойдёт, придумай другой 🙂';
+  } else if (res === 'slow_down') setTimeout(loadBoard, 3000);
   else loadBoard();
 });
-if (dbOn()){ boardBtn.hidden = false; dbCall('hamster_log_visit', { p_device:ME.id }).catch(() => {}); }
+copyCodeBtn.addEventListener('click', () => {
+  const c = fmtCode(ME.code);
+  const done = () => toast('Код скопирован. Сохрани его в заметках', 2600);
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(c).then(done, () => window.prompt('Скопируй код:', c));
+  else window.prompt('Скопируй код:', c);
+});
+restoreForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  const code = restoreInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (!/^[A-Z2-9]{8}$/.test(code)){ restoreMsg.textContent = 'Код — 8 букв и цифр, как на старом телефоне.'; return; }
+  if (code === ME.code){ restoreMsg.textContent = 'Это код этого же телефона 🙂'; return; }
+  restoreMsg.textContent = 'Ищу…'; restoreInput.blur();
+  try {
+    const r = await dbCall('hamster_restore', { p_code:code, p_device:ME.id, p_secret:ME.secret });
+    if (r && r.status === 'ok'){
+      fromMask(r.mask || 0); store.set(KEY, [...collected]);
+      if (r.name) ME.name = r.name;
+      ME.code = code; store.set('hamster.me', ME);
+      renderChips(); renderCode(); nameInput.value = ME.name || ''; restoreInput.value = '';
+      restoreMsg.textContent = `Готово! Качеств: ${collected.size} из ${ORDER.length}.`;
+      toast(`Вернул! Качеств: ${collected.size} из ${ORDER.length}`, 3000);
+      loadBoard();
+    } else restoreMsg.textContent = r && r.status === 'not_found' ? 'Такого кода нет. Проверь буквы и цифры.' : 'Не получилось. Попробуй ещё раз.';
+  } catch (err) {
+    restoreMsg.textContent = 'Нет связи с базой. Проверь интернет.';
+  }
+});
+if (dbOn()){ boardBtn.hidden = false; renderCode(); dbCall('hamster_log_visit', { p_device:ME.id }).catch(() => {}); saveProgress(true); }
+
+/* ---------- на экран «Домой» и работа без интернета ---------- */
+const installBtn = $('#installBtn');
+const standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isMacSafari = !isIOS && /Macintosh/.test(navigator.userAgent) && /Safari/.test(navigator.userAgent) && !/Chrome|Chromium|Edg|Firefox/.test(navigator.userAgent);
+let installEvt = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; });
+if (!standalone && location.protocol === 'https:' && !TEST) installBtn.hidden = false;
+installBtn.addEventListener('click', async () => {
+  if (installEvt){ installEvt.prompt(); try { await installEvt.userChoice; } catch (_) {} installEvt = null; return; }
+  const after = dbOn() ? ' Потом открой Хамстера с иконки и впиши код из 🏆, чтобы качества переехали.' : '';
+  if (isIOS) toast('В Safari нажми «Поделиться» ⬆️ и выбери «На экран „Домой“».' + after, 7000);
+  else if (isMacSafari) toast('В Safari: меню «Файл» → «Добавить в Dock».' + after, 7000);
+  else toast('В меню браузера выбери «Установить приложение» или «Добавить на главный экран».' + after, 7000);
+});
+if ('serviceWorker' in navigator && location.protocol === 'https:' && !TEST) navigator.serviceWorker.register('sw.js').catch(() => {});
 
 /* ---------- частицы ---------- */
 const parts = [];
@@ -1533,7 +1644,8 @@ requestAnimationFrame(loop);
 window.hamster = {
   advance(ms){ for (let i = 0; i < Math.ceil(ms / 16); i++){ clockOff += 16; tick(); } },
   state:() => ({ mood:S.mood, anger:+S.anger.toFixed(2), love:+S.love.toFixed(2), seeds:S.seeds, carry:!!S.carry, gum:S.gum.on,
-                 audio:A.ctx ? A.ctx.state : 'нет', collected:[...collected] })
+                 audio:A.ctx ? A.ctx.state : 'нет', collected:[...collected] }),
+  badName, mask:maskOf, dbOn
 };
 })();
 </script>
